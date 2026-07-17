@@ -1,0 +1,510 @@
+unit theory;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons, GDIPAPI, GDIPOBJ;
+
+type
+  TSpeedButton = class(Vcl.Buttons.TSpeedButton)
+  private
+    FMouseIn: Boolean;
+    procedure CMMouseEnter(var Message: TMessage); message CM_MOUSEENTER;
+    procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
+  protected
+    procedure Paint; override;
+  end;
+  TQuestion = record
+    QText: string;
+    Answers: array[0..3] of string;
+    CorrectAns: Integer;
+  end;
+
+  TPanelEx = class(TPanel);
+
+  TFormTheory = class(TForm)
+    procedure FormCreate(Sender: TObject);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+  private
+    ScrollBox1: TScrollBox;
+    BottomPanel: TPanel;
+    BFinish: TSpeedButton;
+    Questions: array of TQuestion;
+    RadioGroups: array of TRadioGroup;
+    procedure LoadQuestions;
+    procedure BuildTestUI;
+    procedure BFinishClick(Sender: TObject);
+    procedure LabelClick(Sender: TObject);
+  public
+    { Public declarations }
+  end;
+
+var
+  FormTheory: TFormTheory;
+  TheoryScore: Integer = 0;
+  TheoryDone: Boolean = False;
+
+implementation
+
+{$R *.dfm}
+
+procedure TFormTheory.LoadQuestions;
+var
+  i, j, k: Integer;
+  TempQ: TQuestion;
+  TempAns, CorrectStr: string;
+begin
+
+  SetLength(Questions, 24);
+
+  Questions[0].QText := 'Вопрос 1: Какой масштаб у топографической карты 1:100 000?';
+  Questions[0].Answers[0] := 'В 1 см 1 км';
+  Questions[0].Answers[1] := 'В 1 см 100 м';
+  Questions[0].Answers[2] := 'В 1 см 10 км';
+  Questions[0].Answers[3] := 'В 1 см 500 м';
+  Questions[0].CorrectAns := 0;
+
+  Questions[1].QText := 'Вопрос 2: Что такое дирекционный угол?';
+  Questions[1].Answers[0] := 'Угол от северного направления вертикальной линии сетки до объекта';
+  Questions[1].Answers[1] := 'Угол между истинным меридианом и магнитным меридианом';
+  Questions[1].Answers[2] := 'Разность высот двух смежных точек на карте';
+  Questions[1].Answers[3] := 'Горизонтальный угол между экватором и полюсом';
+  Questions[1].CorrectAns := 0;
+
+  Questions[2].QText := 'Вопрос 3: Для чего на горизонталях ставят бергштрих?';
+  Questions[2].Answers[0] := 'Обозначить магнитную аномалию';
+  Questions[2].Answers[1] := 'Показать абсолютную высоту';
+  Questions[2].Answers[2] := 'Показать направление понижения склона';
+  Questions[2].Answers[3] := 'Обозначить обрыв или яму';
+  Questions[2].CorrectAns := 2;
+
+  Questions[3].QText := 'Вопрос 4: Что показывает сближение меридианов?';
+  Questions[3].Answers[0] := 'Угол между истинным и магнитным меридианами';
+  Questions[3].Answers[1] := 'Угол между истинным меридианом и вертикальной линией сетки';
+  Questions[3].Answers[2] := 'Крутизну уклона рельефа';
+  Questions[3].Answers[3] := 'Магнитное склонение';
+  Questions[3].CorrectAns := 1;
+
+  Questions[4].QText := 'Вопрос 5: Что такое азимут?';
+  Questions[4].Answers[0] := 'Угол между направлением на север и направлением на объект';
+  Questions[4].Answers[1] := 'Угол наклона склона';
+  Questions[4].Answers[2] := 'Расстояние до объекта на местности';
+  Questions[4].Answers[3] := 'Относительная высота объекта';
+  Questions[4].CorrectAns := 0;
+
+  Questions[5].QText := 'Вопрос 6: Что такое горизонталь?';
+  Questions[5].Answers[0] := 'Линия на карте, соединяющая точки одинаковой абсолютной высоты';
+  Questions[5].Answers[1] := 'Горизонтальная линия на графике';
+  Questions[5].Answers[2] := 'Линия обозначения моря';
+  Questions[5].Answers[3] := 'Разметочная линия на карте';
+  Questions[5].CorrectAns := 0;
+
+  Questions[6].QText := 'Вопрос 7: Чем отличается план от географической карты?';
+  Questions[6].Answers[0] := 'План составляется без учёта кривизны Земли';
+  Questions[6].Answers[1] := 'План имеет более мелкий масштаб';
+  Questions[6].Answers[2] := 'На плане не обозначаются реки';
+  Questions[6].Answers[3] := 'План использует другую систему знаков';
+  Questions[6].CorrectAns := 0;
+
+  Questions[7].QText := 'Вопрос 8: Что называется абсолютной высотой?';
+  Questions[7].Answers[0] := 'Высота относительно ближайшей точки';
+  Questions[7].Answers[1] := 'Высота относительно уровня океана';
+  Questions[7].Answers[2] := 'Высота над уровнем моря';
+  Questions[7].Answers[3] := 'Высота над уровнем реки';
+  Questions[7].CorrectAns := 2;
+
+  Questions[8].QText := 'Вопрос 9: Какой масштаб считается крупным?';
+  Questions[8].Answers[0] := '1:1 000 000';
+  Questions[8].Answers[1] := '1:100 000';
+  Questions[8].Answers[2] := '1:10 000';
+  Questions[8].Answers[3] := '1:500 000';
+  Questions[8].CorrectAns := 2;
+
+  Questions[9].QText := 'Вопрос 10: Что такое уровенная поверхность?';
+  Questions[9].Answers[0] := 'Уровенная поверхность - это воображаемая поверхность материков, мысленно продолженная над всеми океанами и открытыми морями';
+  Questions[9].Answers[1] := 'Уровенная поверхность - это реальная поверхность океанов и открытых морей';
+  Questions[9].Answers[2] := 'Уровенная поверхность - это воображаемая поверхность океанов и открытых морей, мысленно продолженная под всеми материками';
+  Questions[9].Answers[3] := 'Уровенная поверхность - это реальная поверхность материков, мысленно продолженная над всеми океанами и открытыми морями';
+  Questions[9].CorrectAns := 0;
+
+  Questions[10].QText := 'Вопрос 11: Что такое масштаб карты?';
+  Questions[10].Answers[0] := 'Масштаб карты – это отношение длины отрезка на карте к его действительной длине на местности';
+  Questions[10].Answers[1] := 'Масштаб карты – это степень уменьшения длины отрезка на карте относительно соответствующих им линий на местности';
+  Questions[10].Answers[2] := 'Масштаб карты – это процент уменьшения линий на карте относительно соответствующих им линий на местности';
+  Questions[10].Answers[3] := 'Масштаб карты – это процент увеличения линий на карте относительно соответствующих им линий на местности';
+  Questions[10].CorrectAns := 0;
+
+  Questions[11].QText := 'Вопрос 12: Что такое разграфка карты?';
+  Questions[11].Answers[0] := 'Разграфка карты – система деления карт на листы с помощью линий картографической сетки (линий меридианов и параллелей) или прямоугольной координатной сетки (координатных линий)';
+  Questions[11].Answers[1] := 'Разграфка карты – это деление топографической карты на отдельные листы линиями координатной сетки';
+  Questions[11].Answers[2] := 'Разграфка карты – это деление топографической карты на отдельные листы линиями географических меридианов и параллелей';
+  Questions[11].Answers[3] := 'Разграфка карты – это деление топографической карты на отдельные листы по координатным зонам';
+  Questions[11].CorrectAns := 0;
+
+  Questions[12].QText := 'Вопрос 13: Что такое номенклатура карт?';
+  Questions[12].Answers[0] := 'Номенклатура карт — это система обозначения листов карт разных масштабов';
+  Questions[12].Answers[1] := 'Номенклатура карт — это система обозначения (нумерации) отдельных листов';
+  Questions[12].Answers[2] := 'Номенклатура карт — это система обозначения (нумерации) отдельных зон карты';
+  Questions[12].Answers[3] := 'Номенклатура карт — это система обозначения (нумерации) наиболее значимых объектов карты';
+  Questions[12].CorrectAns := 0;
+
+  Questions[13].QText := 'Вопрос 14: Как обозначаются ряды на картах масштаба 1:1000000?';
+  Questions[13].Answers[0] := 'Ряды обозначаются прописными латинскими буквами от А до Z, начиная от экватора к обоим полюсам';
+  Questions[13].Answers[1] := 'Ряды обозначаются арабскими цифрами, начиная от меридиана 180° с запада на восток';
+  Questions[13].Answers[2] := 'Ряды обозначаются римскими цифрами, начиная от меридиана 180° с запада на восток';
+  Questions[13].Answers[3] := 'Ряды обозначаются прописными русскими буквами от А до Я, начиная от экватора к обоим полюсам';
+  Questions[13].CorrectAns := 0;
+
+  Questions[14].QText := 'Вопрос 15: Из чего состоит номенклатура листа карты масштаба 1:1000000?';
+  Questions[14].Answers[0] := 'Номенклатура листа карты состоит из буквы ряда и номера колонны';
+  Questions[14].Answers[1] := 'Номенклатура листа карты состоит из обозначения ряда и обозначения колонны';
+  Questions[14].Answers[2] := 'Номенклатура листа карты состоит из обозначения ряда и буквы колонны';
+  Questions[14].Answers[3] := 'Номенклатура листа карты состоит из буквы ряда и обозначения колонны';
+  Questions[14].CorrectAns := 0;
+
+  Questions[15].QText := 'Вопрос 16: В чем особенность номенклатуры карты масштаба 1:500000?';
+  Questions[15].Answers[0] := 'Лист карты масштаба 1:500000 является четвертой частью листа карты 1:1000000 и обозначается номенклатурой листа миллионной карты с добавлением одной из прописных букв А, Б, В, Г русского алфавитa, обозначающих соответствующую четверть';
+  Questions[15].Answers[1] := 'Лист карты масштаба 1:500000 является четвертой частью листа карты 1:1000000 и обозначается номенклатурой листа миллионной карты с добавлением одной из прописных латинских букв А, В, С, D, обозначающих соответствующую четверть';
+  Questions[15].Answers[2] := 'Лист карты масштаба 1:500000 является шестнадцатой частью листа карты 1:1000000 и обозначается номенклатурой листа миллионной карты с добавлением одной из прописных букв от А до О русского алфавитa, обозначающих соответствующую шестнадцатую часть';
+  Questions[15].Answers[3] := 'Лист карты масштаба 1:500000 является восьмой частью листа карты 1:1000000 и обозначается номенклатурой листа миллионной карты с добавлением одной из прописных букв от А до О русского алфавитa, обозначающих соответствующую восьмую часть';
+  Questions[15].CorrectAns := 0;
+
+  Questions[16].QText := 'Вопрос 17: В чем особенность номенклатуры карты масштаба 1:200000?';
+  Questions[16].Answers[0] := 'Лист карты масштаба 1:200000 образуется делением миллионного листа на 36 частей; номенклатура его состоит из обозначения листа карты масштаба 1:1000000 с добавлением одной из римских цифр I, II, III, IV, ..., XXXVI';
+  Questions[16].Answers[1] := 'Лист карты масштаба 1:200000 образуется делением миллионного листа на 16 частей; номенклатура его состоит из обозначения листа карты масштаба 1:1000000 с добавлением одной из римских цифр I, II, III, IV, ..., XVI';
+  Questions[16].Answers[2] := 'Лист карты масштаба 1:200000 образуется делением миллионного листа на 24 частей; номенклатура его состоит из обозначения листа карты масштаба 1:1000000 с добавлением одной из римских цифр I, II, III, IV, ..., XХIV';
+  Questions[16].Answers[3] := 'Лист карты масштаба 1:200000 образуется делением миллионного листа на 36 частей; номенклатура его состоит из обозначения листа карты масштаба 1:1000000 с добавлением одной из арабских цифр 1, 2, 3, 4, ..., 36';
+  Questions[16].CorrectAns := 0;
+
+  Questions[17].QText := 'Вопрос 18: В чем особенность номенклатуры карты масштаба 1:100000?';
+  Questions[17].Answers[0] := 'Лист карты масштаба 1:100000 получается делением листа миллионной карты на 144 части; номенклатура его состоит из обозначения листа карты 1:1000000 с добавлением числа одного из 1, 2, 3, 4, .... 143, 144';
+  Questions[17].Answers[1] := 'Лист карты масштаба 1:100000 получается делением листа миллионной карты на 16 частей; номенклатура его состоит из обозначения листа карты 1:1000000 с добавлением одной из латинских букв a, b, c, d, .... p';
+  Questions[17].Answers[2] := 'Лист карты масштаба 1:100000 получается делением листа миллионной карты на 36 частей; номенклатура его состоит из обозначения листа карты 1:1000000 с добавлением числа из чисел I, II, III, IV, ..., XХIV';
+  Questions[17].Answers[3] := 'Лист карты масштаба 1:100000 получается делением листа миллионной карты на 24 части; номенклатура его состоит из обозначения листа карты 1:1000000 с добавлением одной из латинских букв A, B, C, D, .... X';
+  Questions[17].CorrectAns := 0;
+
+  Questions[18].QText := 'Вопрос 19: Что такое Гринвичский меридиан?';
+  Questions[18].Answers[0] := 'Гринвичский меридиан - это воображаемая линия, условно соединяющая северный и южный полюса земного шара. Гринвичский меридиан условно разделяет земной шар на восточное и западное полушарие';
+  Questions[18].Answers[1] := 'Гринвичский меридиан - это воображаемая линия, условно соединяющая северный полюс земного шара с экватором. Гринвичский меридиан условно разделяет земной шар на восточное и западное полушарие';
+  Questions[18].Answers[2] := 'Гринвичский меридиан - это воображаемая линия, условно соединяющая северный и южный полюса земного шара. Гринвичский меридиан условно разделяет земной шар на южное и северное полушарие';
+  Questions[18].Answers[3] := 'Гринвичский меридиан - это воображаемая линия, условно соединяющая южный полюс земного шара с экватором. Гринвичский меридиан условно разделяет земной шар на восточное и западное полушарие';
+  Questions[18].CorrectAns := 0;
+
+  Questions[19].QText := 'Вопрос 20: В каком случае магнитное склонение является восточным, а в каком западным?';
+  Questions[19].Answers[0] := 'Если стрелка компаса отклоняется от истинного меридиана к востоку, магнитное склонение называют восточным (положительным), если стрелка отклоняется к западу, склонение называют западным (отрицательным)';
+  Questions[19].Answers[1] := 'Если стрелка компаса отклоняется от истинного меридиана к востоку, магнитное склонение называют восточным (отрицательным), если стрелка отклоняется к западу, склонение называют западным (положительным)';
+  Questions[19].Answers[2] := 'Если стрелка компаса отклоняется от магнитного меридиана к востоку, магнитное склонение называют восточным (положительным), если стрелка отклоняется к западу, склонение называют западным (отрицательным)';
+  Questions[19].Answers[3] := 'Если стрелка компаса отклоняется от магнитного меридиана к востоку, магнитное склонение называют восточным (отрицательным), если стрелка отклоняется к западу, склонение называют западным (положительным)';
+  Questions[19].CorrectAns := 0;
+
+  Questions[20].QText := 'Вопрос 21: В чем различие между истинными и магнитными меридианами?';
+  Questions[20].Answers[0] := 'Истинные меридианы проходят через Северный и Южный географические полюсы; магнитные меридианы проходят через Северный и Южный магнитный полюсы';
+  Questions[20].Answers[1] := 'Истинные меридианы проходят через Северный и Южный магнитный полюсы; магнитные меридианы проходят через Северный и Южный географические полюсы';
+  Questions[20].Answers[2] := 'Истинные меридианы используются только при работе с картой; магнитные меридианы используются только при работе на местности без карты';
+  Questions[20].Answers[3] := 'Истинные меридианы используются только при работе на местности без карты; магнитные меридианы используются только при работе с картой';
+  Questions[20].CorrectAns := 0;
+
+  Questions[21].QText := 'Вопрос 22: Как на топографических картах обозначается рельеф?';
+  Questions[21].Answers[0] := 'Местные предметы изображаются общепринятыми условными знаками, а рельеф – горизонталями';
+  Questions[21].Answers[1] := 'Местные предметы изображаются общепринятыми условными знаками, а рельеф – вертикалями';
+  Questions[21].Answers[2] := 'Местные предметы изображаются общепринятыми условными знаками, а рельеф – косыми линиями';
+  Questions[21].Answers[3] := 'Местные предметы изображаются общепринятыми условными знаками, а рельеф – прямыми линиями';
+  Questions[21].CorrectAns := 0;
+
+  Questions[22].QText := 'Вопрос 23: Что такое скат в топографии?';
+  Questions[22].Answers[0] := 'Наклонная поверхность форм рельефа';
+  Questions[22].Answers[1] := 'Это высота точки местности над уровнем моря';
+  Questions[22].Answers[2] := 'Превышение одной точки над другой';
+  Questions[22].Answers[3] := 'Возвышенность';
+  Questions[22].CorrectAns := 0;
+
+  Questions[23].QText := 'Вопрос 24: Что относят к местным предметам?';
+  Questions[23].Answers[0] := 'Все расположенные на местности объекты как природного происхождения (леса, реки, болото и т.п.), так и созданные человеком (населенные пункты, дороги, каналы, сады и т.п.)';
+  Questions[23].Answers[1] := 'Все расположенные на местности объекты природного происхождения (леса, реки, болото и т.п.)';
+  Questions[23].Answers[2] := 'Все расположенные на местности объекты созданные человеком (населенные пункты, дороги, каналы, сады и т.п.)';
+  Questions[23].Answers[3] := 'Все расположенные на местности ориентиры';
+  Questions[23].CorrectAns := 0;
+
+  Randomize;
+
+  for i := 0 to High(Questions) do
+  begin
+    CorrectStr := Questions[i].Answers[Questions[i].CorrectAns];
+
+    for j := 3 downto 1 do
+    begin
+      k := Random(j + 1);
+      TempAns := Questions[i].Answers[j];
+      Questions[i].Answers[j] := Questions[i].Answers[k];
+      Questions[i].Answers[k] := TempAns;
+    end;
+
+    for j := 0 to 3 do
+    begin
+      if Questions[i].Answers[j] = CorrectStr then
+      begin
+        Questions[i].CorrectAns := j;
+        Break;
+      end;
+    end;
+  end;
+
+  for i := High(Questions) downto 1 do
+  begin
+    j := Random(i + 1);
+    TempQ := Questions[i];
+    Questions[i] := Questions[j];
+    Questions[j] := TempQ;
+  end;
+end;
+
+procedure TSpeedButton.CMMouseEnter(var Message: TMessage);
+begin
+  inherited;
+  FMouseIn := True;
+  Invalidate;
+end;
+
+procedure TSpeedButton.CMMouseLeave(var Message: TMessage);
+begin
+  inherited;
+  FMouseIn := False;
+  Invalidate;
+end;
+
+procedure TSpeedButton.Paint;
+var
+  graphics: TGPGraphics;
+  path: TGPGraphicsPath;
+  brush: TGPSolidBrush;
+  pen: TGPPen;
+  rect: TGPRectF;
+  radius: Single;
+  textRect: TGPRectF;
+  fontFamily: TGPFontFamily;
+  font: TGPFont;
+  format: TGPStringFormat;
+  BGColor, GoldColor: TGPColor;
+begin
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    radius := 20;
+    GoldColor := MakeColor(255, 255, 215, 0);
+
+    if FMouseIn then
+      BGColor := MakeColor(255, 255, 255, 255)
+    else
+      BGColor := MakeColor(255, 0, 0, 0);
+
+    brush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+    graphics.FillRectangle(brush, 0, 0, Width, Height);
+    brush.Free;
+
+    path := TGPGraphicsPath.Create;
+    rect.X := 1; rect.Y := 1; rect.Width := Width - 2; rect.Height := Height - 2;
+    path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+    path.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+    path.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+    path.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+    path.CloseFigure();
+
+    brush := TGPSolidBrush.Create(BGColor);
+    graphics.FillPath(brush, path);
+    brush.Free;
+
+    pen := TGPPen.Create(GoldColor, 2);
+    graphics.DrawPath(pen, path);
+    pen.Free;
+    path.Free;
+
+    textRect.X := 0; textRect.Y := 0; textRect.Width := Width; textRect.Height := Height;
+    fontFamily := TGPFontFamily.Create('Segoe UI');
+    font := TGPFont.Create(fontFamily, 14, FontStyleBold, UnitPoint);
+    format := TGPStringFormat.Create;
+    format.SetAlignment(StringAlignmentCenter);
+    format.SetLineAlignment(StringAlignmentCenter);
+    brush := TGPSolidBrush.Create(GoldColor);
+    graphics.DrawString(Caption, -1, font, textRect, format, brush);
+
+    brush.Free; font.Free; fontFamily.Free; format.Free;
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormTheory.LabelClick(Sender: TObject);
+begin
+  if (Sender is TLabel) and (TLabel(Sender).Tag <> 0) then
+    TRadioButton(TLabel(Sender).Tag).Checked := True;
+end;
+
+procedure TFormTheory.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  ScrollBox1.VertScrollBar.Position := ScrollBox1.VertScrollBar.Position - (WheelDelta div 4);
+  ScrollBox1.Invalidate;
+  Handled := True;
+end;
+
+procedure TFormTheory.BuildTestUI;
+var
+  i, j: Integer;
+  RG: TRadioGroup;
+  RB: TRadioButton;
+  Lbl: TLabel;
+  RBRefs: array[0..3] of TRadioButton;
+  PB: TPaintBox;
+  ColonPos: Integer;
+  CleanText: string;
+begin
+  BottomPanel := TPanel.Create(Self);
+  BottomPanel.Parent := Self;
+  BottomPanel.Align := alBottom;
+  BottomPanel.Height := 100;
+  BottomPanel.Color := clBlack;
+  BottomPanel.ParentBackground := False;
+  BottomPanel.BevelOuter := bvNone;
+
+  PB := TPaintBox.Create(Self);
+  PB.Parent := BottomPanel;
+  PB.Align := alClient;
+
+  BFinish := TSpeedButton.Create(Self);
+  BFinish.Parent := BottomPanel;
+  BFinish.Width := 180;
+  BFinish.Height := 50;
+  BFinish.Left := (BottomPanel.Width - BFinish.Width) div 2;
+  BFinish.Top := 35;
+  BFinish.Anchors := [akTop];
+  BFinish.Caption := 'Завершить';
+  BFinish.Flat := True;
+  BFinish.Cursor := crHandPoint;
+  BFinish.Font.Name := 'Segoe UI';
+  BFinish.Font.Size := 14;
+  BFinish.Font.Color := $00D7FF;
+  BFinish.Font.Style := [fsBold];
+  BFinish.OnClick := BFinishClick;
+
+  ScrollBox1 := TScrollBox.Create(Self);
+  ScrollBox1.Parent := Self;
+  ScrollBox1.Align := alClient;
+  ScrollBox1.Color := clBlack;
+  ScrollBox1.BorderStyle := bsNone;
+
+  ScrollBox1.DoubleBuffered := True;
+
+  SetLength(RadioGroups, Length(Questions));
+
+  for i := 0 to High(Questions) do
+  begin
+    RG := TRadioGroup.Create(Self);
+    RG.Parent := ScrollBox1;
+
+    RG.Left := 30;
+    RG.Width := ScrollBox1.clientWidth - 60;
+    RG.Height := 240;
+    RG.Top := 15 + (i * 260);
+    RG.Anchors := [akLeft, akTop, akRight];
+
+    ColonPos := Pos(':', Questions[i].QText);
+
+    if ColonPos > 0 then
+      CleanText := Trim(Copy(Questions[i].QText, ColonPos + 1, Length(Questions[i].QText)))
+    else
+      CleanText := Questions[i].QText;
+
+    RG.Caption := ' Вопрос ' + IntToStr(i + 1) + ': ' + CleanText + ' ';
+
+    RG.ParentBackground := False;
+    RG.Color := clBlack;
+    RG.StyleElements := [];
+
+    RG.DoubleBuffered := False;
+
+    RG.Font.Color := $00D7FF;
+    RG.Font.Name := 'Segoe UI';
+    RG.Font.Size := 11;
+    RG.Font.Style := [fsBold];
+
+    for j := 0 to 3 do
+    begin
+      RG.Items.Add(Questions[i].Answers[j]);
+    end;
+
+    for j := 0 to 3 do
+      RBRefs[j] := TRadioButton(RG.Controls[j]);
+
+    for j := 0 to 3 do
+    begin
+      RB := RBRefs[j];
+
+      Lbl := TLabel.Create(Self);
+      Lbl.Parent := RG;
+      Lbl.AutoSize := False;
+      Lbl.Caption := RB.Caption;
+
+      RB.Caption := '';
+      RB.Width := 20;
+
+      Lbl.Left  := RB.Left + 25;
+      Lbl.Top   := RB.Top + 1;
+      Lbl.Width := RG.Width - Lbl.Left - 10;
+      Lbl.Height := 50;
+      Lbl.Anchors := [akLeft, akTop, akRight];
+      Lbl.WordWrap := True;
+
+      Lbl.Layout := tlCenter;
+
+      Lbl.Font.Color := clWhite;
+      Lbl.Font.Name  := 'Segoe UI';
+      Lbl.Font.Size  := 10;
+
+      Lbl.StyleElements := [];
+      Lbl.Transparent := False;
+      Lbl.Color := clBlack;
+
+      Lbl.Cursor := crHandPoint;
+
+      Lbl.OnClick := LabelClick;
+      Lbl.Tag := NativeInt(RB);
+    end;
+
+    RadioGroups[i] := RG;
+  end;
+end;
+
+procedure TFormTheory.FormCreate(Sender: TObject);
+begin
+  Self.Caption := 'Теоретический тест';
+  Self.Color := clBlack;
+  Self.Width := 900;
+  Self.Height := 700;
+  Self.Position := poScreenCenter;
+  Self.DoubleBuffered := True;
+  Self.OnMouseWheel := FormMouseWheel;
+  LoadQuestions;
+  BuildTestUI;
+end;
+
+procedure TFormTheory.BFinishClick(Sender: TObject);
+var
+  i: Integer;
+  Score: Integer;
+begin
+  Score := 0;
+  for i := 0 to High(Questions) do
+  begin
+    if RadioGroups[i].ItemIndex = Questions[i].CorrectAns then
+      Inc(Score);
+  end;
+
+  TheoryScore := Score;
+  TheoryDone := True;
+
+  Close;
+end;
+
+end.

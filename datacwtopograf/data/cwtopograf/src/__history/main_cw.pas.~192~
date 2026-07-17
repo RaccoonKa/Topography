@@ -1,0 +1,336 @@
+﻿unit main_cw;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls, GDIPAPI, GDIPOBJ;
+
+type
+  TSpeedButton = class(Vcl.Buttons.TSpeedButton)
+  protected
+    procedure Paint; override;
+  end;
+  TFormmaincw = class(TForm)
+    ButtonTheory: TSpeedButton;
+    ButtonPractice: TSpeedButton;
+    ButtonInstruction: TSpeedButton;
+    ButtonResults: TSpeedButton;
+    ButtonExit: TSpeedButton;
+    ImageLogo: TPaintBox;
+    LabelCredits: TLabel;
+    procedure ButtonPracticeClick(Sender: TObject);
+    procedure ButtonExitClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure ButtonInstructionClick(Sender: TObject);
+    procedure ButtonTheoryClick(Sender: TObject);
+    procedure ButtonResultsClick(Sender: TObject);
+    procedure ImageLogoPaint(Sender: TObject);
+  private
+    FLogoImage: TGPImage;
+  public
+    { Public declarations }
+  end;
+
+var
+  Formmaincw: TFormmaincw;
+
+implementation
+
+{$R *.dfm}
+
+uses
+  instruction, coords_25k, coords_50k, coords_100k, theory, results;
+
+procedure TSpeedButton.Paint;
+var
+  graphics: TGPGraphics;
+  path, borderPath: TGPGraphicsPath;
+  brush: TGPSolidBrush;
+  pen: TGPPen;
+  rect: TGPRectF;
+  radius: Single;
+begin
+  inherited Paint;
+
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    radius := 20;
+
+    path := TGPGraphicsPath.Create;
+    try
+      rect.X := 0;
+      rect.Y := 0;
+      rect.Width := Width;
+      rect.Height := Height;
+      path.AddRectangle(rect);
+
+      path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      path.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      path.CloseFigure();
+
+      brush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+      try
+        graphics.FillPath(brush, path);
+      finally
+        brush.Free;
+      end;
+    finally
+      path.Free;
+    end;
+
+    pen := TGPPen.Create(MakeColor(255, 255, 215, 0), 2);
+    borderPath := TGPGraphicsPath.Create;
+    try
+      rect.X := 1;
+      rect.Y := 1;
+      rect.Width := Width - 2;
+      rect.Height := Height - 2;
+
+      borderPath.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      borderPath.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      borderPath.CloseFigure();
+
+      graphics.DrawPath(pen, borderPath);
+    finally
+      borderPath.Free;
+      pen.Free;
+    end;
+
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormmaincw.FormCreate(Sender: TObject);
+var
+  i: Integer;
+begin
+  Application.Title := ' ';
+  Self.BorderStyle := bsNone;
+  Self.Left := 0;
+  Self.Top := 0;
+  Self.Width := Screen.Width;
+  Self.Height := Screen.Height;
+  Self.Color := clBlack;
+
+  if FileExists('..\data\cwtopograf\assets\decorations/logo_vuc.jpg') then
+    FLogoImage := TGPImage.Create('..\data\cwtopograf\assets\decorations/logo_vuc.jpg')
+  else
+    FLogoImage := nil;
+
+  for i := 0 to Self.ComponentCount - 1 do
+  begin
+    if Self.Components[i] is TSpeedButton then
+    begin
+      with TSpeedButton(Self.Components[i]) do
+      begin
+        Flat := True;
+        Font.Color := $00D7FF;
+        Cursor := crHandPoint;
+        Font.Size := 14;
+      end;
+    end;
+  end;
+
+  LabelCredits.Font.Color := $00D7FF;
+  LabelCredits.Font.Name := 'Segoe UI';
+  LabelCredits.Font.Height := -17;
+  LabelCredits.Font.Style := [fsBold];
+  LabelCredits.Alignment := taRightJustify;
+  LabelCredits.Caption := 'Выполнил:                                  ' + sLineBreak +
+                          'Кравчук Светозар Кириллович' + sLineBreak +
+                          '' + sLineBreak +
+                          'Научный руководитель:           ' + sLineBreak +
+                          'Рак Евгений Николаевич          ';
+
+  ButtonTheory.Caption      := 'Теория';
+  ButtonPractice.Caption    := 'Практика';
+  ButtonInstruction.Caption := 'Руководство';
+  ButtonResults.Caption     := 'Результаты';
+  ButtonExit.Caption        := 'Выход';
+
+  FormResize(Self);
+end;
+
+procedure TFormmaincw.FormDestroy(Sender: TObject);
+begin
+  FLogoImage.Free;
+end;
+
+procedure TFormmaincw.FormResize(Sender: TObject);
+var
+  ButtonStep: Integer;
+  LogoToButtonMargin: Integer;
+begin
+  ButtonStep := 95;
+  LogoToButtonMargin := 30;
+
+  ImageLogo.Left := (Self.ClientWidth - ImageLogo.Width) div 2;
+  ImageLogo.Top := 20;
+
+  ButtonTheory.Left      := (Self.ClientWidth - ButtonTheory.Width) div 2;
+  ButtonPractice.Left    := (Self.ClientWidth - ButtonPractice.Width) div 2;
+  ButtonInstruction.Left := (Self.ClientWidth - ButtonInstruction.Width) div 2;
+  ButtonResults.Left     := (Self.ClientWidth - ButtonResults.Width) div 2;
+  ButtonExit.Left        := (Self.ClientWidth - ButtonExit.Width) div 2;
+
+  ButtonTheory.Top      := ImageLogo.Top + ImageLogo.Height + LogoToButtonMargin;
+  ButtonPractice.Top    := ButtonTheory.Top + ButtonStep;
+  ButtonInstruction.Top := ButtonTheory.Top + (ButtonStep * 2);
+  ButtonResults.Top     := ButtonTheory.Top + (ButtonStep * 3);
+  ButtonExit.Top        := ButtonTheory.Top + (ButtonStep * 4);
+
+  LabelCredits.Left := Self.ClientWidth - LabelCredits.Width - 40;
+  LabelCredits.Top := Self.ClientHeight - LabelCredits.Height - 40;
+
+  Self.Invalidate;
+end;
+
+procedure TFormmaincw.ImageLogoPaint(Sender: TObject);
+var
+  graphics: TGPGraphics;
+  destRect: TGPRectF;
+  imgWidth, imgHeight: Integer;
+  scale: Double;
+  w, h: Integer;
+begin
+  if FLogoImage = nil then Exit;
+
+  graphics := TGPGraphics.Create(ImageLogo.Canvas.Handle);
+  try
+    graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    imgWidth := FLogoImage.GetWidth;
+    imgHeight := FLogoImage.GetHeight;
+
+    if (ImageLogo.Width / ImageLogo.Height) > (imgWidth / imgHeight) then
+    begin
+      h := ImageLogo.Height;
+      w := Round(h * imgWidth / imgHeight);
+    end
+    else
+    begin
+      w := ImageLogo.Width;
+      h := Round(w * imgHeight / imgWidth);
+    end;
+
+    destRect.X := (ImageLogo.Width - w) / 2;
+    destRect.Y := (ImageLogo.Height - h) / 2;
+    destRect.Width := w;
+    destRect.Height := h;
+
+    graphics.DrawImage(FLogoImage, destRect, 0, 0, imgWidth, imgHeight, UnitPixel);
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormmaincw.FormPaint(Sender: TObject);
+begin
+  // заглушка
+end;
+
+procedure TFormmaincw.ButtonInstructionClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  ImageLogo.Visible := False;
+  LabelCredits.Visible := False;
+
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[i] is TSpeedButton then
+      TSpeedButton(Self.Components[i]).Visible := False;
+
+  FormInstruction.ShowModal;
+  ImageLogo.Visible := True;
+
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[i] is TSpeedButton then
+      TSpeedButton(Self.Components[i]).Visible := True;
+
+  Self.Invalidate;
+end;
+
+procedure TFormmaincw.ButtonPracticeClick(Sender: TObject);
+var
+  RandomIndex: Integer;
+begin
+  if PracticeCoordsDone and PracticeCornersDone then
+  begin
+    ShowMessage('Вы уже выполнили практическое задание!');
+    Exit;
+  end;
+  Randomize;
+  RandomIndex := Random(3);
+
+  case RandomIndex of
+    0: Formcoords25k.Show;
+    1: Formcoords50k.Show;
+    2: Formcoords100k.Show;
+  end;
+end;
+
+procedure TFormmaincw.ButtonTheoryClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  if TheoryDone then
+  begin
+    ShowMessage('Вы уже решили тест!');
+    Exit;
+  end;
+  ImageLogo.Visible := False;
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[i] is TSpeedButton then
+      TSpeedButton(Self.Components[i]).Visible := False;
+
+  FormTheory.ShowModal;
+  ImageLogo.Visible := True;
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[i] is TSpeedButton then
+      TSpeedButton(Self.Components[i]).Visible := True;
+
+  Self.Invalidate;
+end;
+
+procedure TFormmaincw.ButtonResultsClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  if not (TheoryDone and PracticeCoordsDone and PracticeCornersDone) then
+  begin
+    ShowMessage('Вкладка "Результаты" откроется только после полного прохождения теории и практики!');
+    Exit;
+  end;
+  ImageLogo.Visible := False;
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[i] is TSpeedButton then
+      TSpeedButton(Self.Components[i]).Visible := False;
+  FormResults.ShowModal;
+  ImageLogo.Visible := True;
+  for i := 0 to Self.ComponentCount - 1 do
+    if Self.Components[i] is TSpeedButton then
+      TSpeedButton(Self.Components[i]).Visible := True;
+
+  Self.Invalidate;
+end;
+
+procedure TFormmaincw.ButtonExitClick(Sender: TObject);
+begin
+  Close;
+end;
+
+end.

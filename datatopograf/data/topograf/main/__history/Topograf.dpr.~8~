@@ -1,0 +1,22 @@
+program Topograf;
+
+uses
+  Forms,
+  coords_100k in 'coords_100k.pas' {Formcoords100k},
+  training in 'training.pas' {Formtraining},
+  about_programm in 'about_programm.pas' {Formprogramm},
+  menu in 'menu.pas' {Formmenu},
+  coords_25k in 'coords_25k.pas' {Formcoords25k},
+  coords_50k in 'coords_50k.pas' {Formcoords50k};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TFormmenu, Formmenu);
+  Application.CreateForm(TFormprogramm, Formprogramm);
+  Application.CreateForm(TFormtraining, Formtraining);
+  Form1.Visible := False;
+  Application.Run;
+end.

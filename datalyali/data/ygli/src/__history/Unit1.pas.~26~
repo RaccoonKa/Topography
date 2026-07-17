@@ -1,0 +1,250 @@
+﻿unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Buttons, ExtCtrls, ImgList, MPlayer, ComCtrls, DBCtrls, GifImg;
+
+type
+ TBar=class(TTrackBar)
+ private
+    { Private declarations }
+  public
+    property OnMouseUp;
+    property OnMouseDown;
+    property OnMouseMove;
+  end;
+type
+  TForm1 = class(TForm)
+    Image1: TImage;
+    SpeedButton2: TSpeedButton;
+    SpeedButton4: TSpeedButton;
+    Label1: TLabel;
+    RichEdit1: TRichEdit;
+    Image2: TImage;
+    Timer1: TTimer;
+    TrackBar1: TTrackBar;
+    procedure FormShow(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure SpeedButton3MouseLeave(Sender: TObject);
+    procedure SpeedButton3MouseEnter(Sender: TObject);
+    procedure SpeedButton2MouseLeave(Sender: TObject);
+    procedure SpeedButton2MouseEnter(Sender: TObject);
+    procedure SpeedButton4MouseLeave(Sender: TObject);
+    procedure SpeedButton4MouseEnter(Sender: TObject);
+    procedure SpeedButton5MouseLeave(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure TrackBar1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure TrackBar1Change(Sender: TObject);
+    procedure qMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure SpeedButton4Click(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
+
+  private
+    { Private declarations }
+    procedure qMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1; Images1:array[1..3] of TbitMap ; N:integer; FirstPlay:boolean;
+  Pause:boolean; Bar:Tbar; Down:boolean; Gif: TGifImage;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.FormShow(Sender: TObject);
+var str: string; i:integer;
+begin
+N:=1;
+
+Form1.Color:=RGB(32,20,10);
+
+  SpeedButton2.Glyph.LoadFromFile('..\data\ygli\assets\brown\P41.bmp');
+  SpeedButton4.Glyph.LoadFromFile('..\data\ygli\assets\brown\P31.bmp');
+  RichEdit1.Lines.LoadFromFile('..\data\ygli\assets\rtf/instruction 1.rtf');
+   {RichEdit1.Lines.Add(' ');
+   {RichEdit1.Lines.Add('В раскрывающемся списке неоходимо выбрать ' +
+               'топографический условный знак, а затем установить его на'+
+               ' карту нажатием мыши.');  
+               RichEdit1.Lines.LoadFromFile('instruction.rtf');  }
+  {Bar:=TBar.Create(self);
+  Bar.Parent:=self;
+  bar.Top:=460;
+  Bar.Left:=10;
+  Bar.Width:=550;
+
+  Bar.OnMouseMove:=qMouseMove;
+  Bar.OnMouseDown:=qMouseDown;
+  bar.Height:=20;
+  bar.Enabled:=false;  }
+
+
+     /// гифка
+    Gif := TGifImage.Create;
+    Gif.LoadFromFile('..\data\ygli\assets\gif/1.gif');
+    Gif.Animate := True;
+    Gif.AnimateLoop := glEnabled;
+    Image2.Picture.Assign(Gif);
+end;
+
+procedure TForm1.SpeedButton1Click(Sender: TObject);
+
+var P,i:integer; M:array[1..6] of integer;
+begin
+
+
+end;
+
+procedure TForm1.SpeedButton2Click(Sender: TObject);
+var P,i:integer; M:array[1..6] of integer;
+begin
+if N>1 then
+Begin
+  N:=N-1;
+  TrackBar1.Position:=n-1;
+End;
+
+end;
+
+procedure TForm1.SpeedButton2MouseEnter(Sender: TObject);
+begin
+SpeedButton2.Glyph.LoadFromFile('..\data\ygli\assets\brown\P42.bmp');
+
+end;
+
+procedure TForm1.SpeedButton2MouseLeave(Sender: TObject);
+begin
+SpeedButton2.Glyph.LoadFromFile('..\data\ygli\assets\brown\P41.bmp');
+
+end;
+
+procedure TForm1.SpeedButton3MouseEnter(Sender: TObject);
+begin
+if pause then
+
+else
+
+end;
+
+procedure TForm1.SpeedButton3MouseLeave(Sender: TObject);
+begin
+if pause then
+
+else
+
+end;
+
+
+
+procedure TForm1.SpeedButton4Click(Sender: TObject);
+var P,i:integer; M:array[1..6] of integer;
+begin
+if N<5 then
+Begin
+ n:=n+1;
+ TrackBar1.Position:=n-1;
+End;
+end;
+
+procedure TForm1.SpeedButton4MouseEnter(Sender: TObject);
+begin
+
+  SpeedButton4.Glyph.LoadFromFile('..\data\ygli\assets\brown\P32.bmp');
+end;
+
+procedure TForm1.SpeedButton4MouseLeave(Sender: TObject);
+begin
+
+  SpeedButton4.Glyph.LoadFromFile('..\data\ygli\assets\brown\P31.bmp');
+end;
+
+procedure TForm1.SpeedButton5MouseLeave(Sender: TObject);
+begin
+ Gif.LoadFromFile('..\data\ygli\assets\gif/2.gif');
+ Gif.Animate := True;
+ Gif.AnimateLoop := glEnabled;
+ Image2.Picture.Assign(Gif);
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+if N=3 then
+N:=0;
+N:=N+1;
+Label1.Caption:='Шаг:    0';
+
+
+Image1.Picture.Bitmap:=Images1[N];
+end;
+
+procedure TForm1.Timer2Timer(Sender: TObject);
+var P:integer;
+begin
+    end;
+
+
+
+
+procedure TForm1.TrackBar1Change(Sender: TObject);
+var h:HWnD; P : TPoint;
+begin
+n:=TrackBar1.Position+1;
+Gif.LoadFromFile('..\data\ygli\assets\gif/'+inttostr(n)+'.gif');
+   // Gif.Animate := True;
+   // Gif.AnimateLoop := glEnabled;
+    Image2.Picture.Assign(Gif);
+    Label1.Caption:=inttostr(n)+'/5';
+    RichEdit1.Lines.LoadFromFile('..\data\ygli\assets\rtf/instruction '+inttostr(n)+'.rtf');
+end;
+
+procedure TForm1.TrackBar1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+
+end;
+
+(*procedure TForm1.TrackBar1KeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+if key=VK_LBUTTON then
+Begin
+MediaPlayer1.Position:=TrackBar1.Position;
+Timer2.Enabled:=true;
+end;
+end;  *)
+procedure TForm1.qMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+  var P:TPoint;
+begin
+
+  Down:=true;
+
+  Bar.Position:=Round((x-11)/(Bar.Width-22)*(Bar.Max));
+  GetCursorPos(P); {получили экранные координаты}
+  P := Form1.ScreenToClient(P); {преобразовали в координаты клиента}
+
+;
+
+end;
+
+procedure TForm1.qMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+if Down then
+Begin
+Bar.Position:=Round((x-11)/(Bar.Width-22)*(Bar.Max));
+
+
+
+End;
+Caption:=inttostr(x);
+end;
+
+
+end.

@@ -1,0 +1,246 @@
+﻿unit Unit4;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, pngimage;
+
+type
+  TForm4 = class(TForm)
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
+    ImageExit: TImage;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    ImageForm1: TImage;
+    ImageForm3: TImage;
+    Image1: TImage;
+    Image2: TImage;
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure ImageExitMouseEnter(Sender: TObject);
+    procedure ImageExitMouseLeave(Sender: TObject);
+    procedure ImageExitClick(Sender: TObject);
+    procedure ImageForm1Click(Sender: TObject);
+    procedure ImageForm1MouseEnter(Sender: TObject);
+    procedure ImageForm1MouseLeave(Sender: TObject);
+    procedure ImageForm3Click(Sender: TObject);
+    procedure ImageForm3MouseEnter(Sender: TObject);
+    procedure ImageForm3MouseLeave(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form4: TForm4;
+
+implementation
+
+uses Unit2, Unit5, Unit1, Unit3, Unit6;
+
+{$R *.dfm}
+
+procedure TForm4.FormCreate(Sender: TObject);
+begin
+  BorderStyle := bsNone;
+  Color := $051923;
+  Self.OnClick := nil;
+
+  Button1.Caption := 'Чкаловск (1986 г.)';
+  Button1.Font.Size := 16;
+
+  Button2.Caption := 'СНОВ (1991 г.)';
+  Button2.Font.Size := 16;
+
+  Button3.Caption := 'СНОВ (1966 г.)';
+  Button3.Font.Size := 16;
+
+  Label1.Caption := 'Масштаб 1:100000';
+  Label1.Font.Size := 12;
+  Label1.Font.Color := clWhite;
+
+  Label2.Caption := 'Масштаб 1:25000';
+  Label2.Font.Size := 12;
+  Label2.Font.Color := clWhite;
+
+  Label3.Caption := 'Масштаб 1:50000';
+  Label3.Font.Size := 12;
+  Label3.Font.Color := clWhite;
+
+  ImageExit.Picture.LoadFromFile('..\data\ygli\assets\green\Btnexitgreen.bmp');
+  ImageExit.Stretch := True;
+  ImageExit.Width := ImageExit.Picture.Width;
+  ImageExit.Height := ImageExit.Picture.Height;
+  ImageExit.Cursor := crHandPoint;
+  ImageExit.OnMouseEnter := ImageExitMouseEnter;
+  ImageExit.OnMouseLeave := ImageExitMouseLeave;
+  ImageExit.OnClick := ImageExitClick;
+
+  ImageForm1.Picture.LoadFromFile('..\data\ygli\assets\green\11.bmp');
+  ImageForm1.Width := ImageForm1.Picture.Width;
+  ImageForm1.Height := ImageForm1.Picture.Height;
+  ImageForm1.Cursor := crHandPoint;
+  ImageForm1.OnClick := ImageForm1Click;
+  ImageForm1.OnMouseEnter := ImageForm1MouseEnter;
+  ImageForm1.OnMouseLeave := ImageForm1MouseLeave;
+
+  ImageForm3.Picture.LoadFromFile('..\data\ygli\assets\green\31.bmp');
+  ImageForm3.Width := ImageForm3.Picture.Width;
+  ImageForm3.Height := ImageForm3.Picture.Height;
+  ImageForm3.Cursor := crHandPoint;
+  ImageForm3.OnClick := ImageForm3Click;
+  ImageForm3.OnMouseEnter := ImageForm3MouseEnter;
+  ImageForm3.OnMouseLeave := ImageForm3MouseLeave;
+
+  Image1.Picture.LoadFromFile('..\data\ygli\assets\earth_maps\earth_map_1.png');
+  Image1.Transparent := True;
+  Image1.Width := Image1.Picture.Width;
+  Image1.Height := Image1.Picture.Height;
+  Image2.Picture.LoadFromFile('..\data\ygli\assets\earth_maps\earth_map_2.png');
+  Image2.Transparent := True;
+  Image2.Width := Image2.Picture.Width;
+  Image2.Height := Image2.Picture.Height;
+end;
+
+procedure TForm4.FormResize(Sender: TObject);
+var
+  BtnWidth, BtnHeight, Gap, TotalWidth, StartX: Integer;
+begin
+  BtnWidth := 250;
+  BtnHeight := 80;
+  Gap := 50;
+  TotalWidth := (BtnWidth * 3) + (Gap * 2);
+  StartX := (ClientWidth - TotalWidth) div 2;
+
+  Button1.SetBounds(StartX, (ClientHeight - BtnHeight) div 2, BtnWidth, BtnHeight);
+   Button3.SetBounds(Button1.Left + BtnWidth + Gap, Button1.Top, BtnWidth, BtnHeight);
+  Button2.SetBounds(Button3.Left + BtnWidth + Gap, Button1.Top, BtnWidth, BtnHeight);
+
+  Label1.Left := Button1.Left + (Button1.Width - Label1.Width) div 2;
+  Label1.Top := Button1.Top + Button1.Height + 10;
+
+  Label2.Left := Button2.Left + (Button2.Width - Label2.Width) div 2;
+  Label2.Top := Button2.Top + Button2.Height + 10;
+
+  Label3.Left := Button3.Left + (Button3.Width - Label3.Width) div 2;
+  Label3.Top := Button3.Top + Button3.Height + 10;
+
+  ImageForm1.Left := (ClientWidth - ImageForm1.Width) div 2;
+  ImageForm1.Top := Label1.Top + Label1.Height + 40;
+
+  ImageForm3.Left := (ClientWidth - ImageForm3.Width) div 2;
+  ImageForm3.Top := ImageForm1.Top + ImageForm1.Height + 20;
+
+  ImageExit.Anchors := [akLeft, akTop];
+  ImageExit.Left := ClientWidth - ImageExit.Width - 30;
+  ImageExit.Top := ClientHeight - ImageExit.Height - 30;
+
+  Image1.Left := ClientWidth - Trunc(Image1.Width * 0.8);
+  Image1.Top := -Trunc(Image1.Height * 0.2);
+
+  Image2.Left := -Trunc(Image2.Width * 0.2);
+  Image2.Top := ClientHeight - Trunc(Image2.Height * 0.8);
+end;
+
+procedure TForm4.FormShow(Sender: TObject);
+begin
+  Self.Left := 0;
+  Self.Top := 0;
+  Self.Width := Screen.Width;
+  Self.Height := Screen.Height;
+  Self.WindowState := wsMaximized;
+end;
+
+procedure TForm4.Button1Click(Sender: TObject);
+var
+  F: TForm2;
+begin
+  F := TForm2.Create(Application);
+  try
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TForm4.Button2Click(Sender: TObject);
+var
+  F: TForm5;
+begin
+  F := TForm5.Create(Application);
+  try
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TForm4.Button3Click(Sender: TObject);
+var
+  F: TForm6;
+begin
+  F := TForm6.Create(Application);
+  try
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TForm4.ImageForm1Click(Sender: TObject);
+begin
+  Unit1.Form1.Visible := True;
+end;
+
+procedure TForm4.ImageForm1MouseEnter(Sender: TObject);
+begin
+  ImageForm1.Picture.LoadFromFile('..\data\ygli\assets\green\12.bmp');
+end;
+
+procedure TForm4.ImageForm1MouseLeave(Sender: TObject);
+begin
+  ImageForm1.Picture.LoadFromFile('..\data\ygli\assets\green\11.bmp');
+end;
+
+procedure TForm4.ImageForm3Click(Sender: TObject);
+begin
+  Unit3.Form3.Visible := True;
+end;
+
+procedure TForm4.ImageForm3MouseEnter(Sender: TObject);
+begin
+  ImageForm3.Picture.LoadFromFile('..\data\ygli\assets\green\32.bmp');
+end;
+
+procedure TForm4.ImageForm3MouseLeave(Sender: TObject);
+begin
+  ImageForm3.Picture.LoadFromFile('..\data\ygli\assets\green\31.bmp');
+end;
+
+procedure TForm4.ImageExitMouseEnter(Sender: TObject);
+begin
+  ImageExit.Picture.LoadFromFile('..\data\ygli\assets\green\Btnexitgreen2.bmp');
+end;
+
+procedure TForm4.ImageExitMouseLeave(Sender: TObject);
+begin
+  ImageExit.Picture.LoadFromFile('..\data\ygli\assets\green\Btnexitgreen.bmp');
+end;
+
+procedure TForm4.ImageExitClick(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+
+end.
+

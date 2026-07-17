@@ -1,0 +1,166 @@
+﻿unit Unit3;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ComCtrls, Vcl.Buttons, GDIPAPI, GDIPOBJ;
+
+type
+  TSpeedButton = class(Vcl.Buttons.TSpeedButton)
+  protected
+    procedure Paint; override;
+  end;
+
+  TForm3 = class(TForm)
+    RichEdit1: TRichEdit;
+    procedure FormShow(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+  private
+    FButtonBack: TSpeedButton;
+    procedure ButtonBackClick(Sender: TObject);
+  public
+  end;
+
+var
+  Form3: TForm3;
+
+implementation
+
+{$R *.dfm}
+
+procedure TSpeedButton.Paint;
+var
+  graphics: TGPGraphics;
+  path, borderPath: TGPGraphicsPath;
+  brush: TGPSolidBrush;
+  pen: TGPPen;
+  rect: TGPRectF;
+  radius: Single;
+begin
+  inherited Paint;
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    radius := 20;
+
+    path := TGPGraphicsPath.Create;
+    try
+      rect.X := 0;
+      rect.Y := 0;
+      rect.Width := Width;
+      rect.Height := Height;
+      path.AddRectangle(rect);
+
+      path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      path.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      path.CloseFigure();
+
+      brush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+      try
+        graphics.FillPath(brush, path);
+      finally
+        brush.Free;
+      end;
+    finally
+      path.Free;
+    end;
+
+    pen := TGPPen.Create(MakeColor(255, 255, 215, 0), 2);
+    borderPath := TGPGraphicsPath.Create;
+    try
+      rect.X := 1;
+      rect.Y := 1;
+      rect.Width := Width - 2;
+      rect.Height := Height - 2;
+
+      borderPath.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      borderPath.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      borderPath.CloseFigure();
+
+      graphics.DrawPath(pen, borderPath);
+    finally
+      borderPath.Free;
+      pen.Free;
+    end;
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TForm3.FormCreate(Sender: TObject);
+begin
+  BorderStyle := bsNone;
+  Color := clBlack;
+  WindowState := wsMaximized;
+  DoubleBuffered := True;
+
+  FButtonBack := TSpeedButton.Create(Self);
+  with FButtonBack do
+  begin
+    Parent := Self;
+    Caption := 'Назад';
+    Flat := True;
+    Font.Color := $00D7FF;
+    Font.Size := 14;
+    Font.Name := 'Segoe UI';
+    Font.Style := [fsBold];
+    Cursor := crHandPoint;
+    Width := 200;
+    Height := 50;
+    OnClick := ButtonBackClick;
+  end;
+end;
+
+procedure TForm3.FormResize(Sender: TObject);
+const
+  Margin = 60;
+  ButtonToRichGap = 40;
+  RichEditMaxWidth = 500;
+var
+  RichW, RichH: Integer;
+begin
+  FButtonBack.Left := (ClientWidth - FButtonBack.Width) div 2;
+  FButtonBack.Top := ClientHeight - FButtonBack.Height - Margin;
+
+  RichW := ClientWidth - 2 * Margin;
+  if RichW > RichEditMaxWidth then
+    RichW := RichEditMaxWidth;
+
+  RichH := FButtonBack.Top - (2 * Margin) - ButtonToRichGap;
+
+  RichEdit1.SetBounds((ClientWidth - RichW) div 2, Margin + 30, RichW, RichH);
+end;
+
+procedure TForm3.FormShow(Sender: TObject);
+begin
+  if FileExists('..\data\topograf\assets\extras\ОProgramme.rtf') then
+    RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\ОProgramme.rtf');
+
+  RichEdit1.SelectAll;
+  RichEdit1.SelAttributes.Color := clWhite;
+  RichEdit1.SelAttributes.Name := 'Segoe UI';
+  RichEdit1.SelAttributes.Size := 11;
+  RichEdit1.SelStart := 0;
+
+  Self.Left := 0;
+  Self.Top := 0;
+  Self.Width := Screen.Width;
+  Self.Height := Screen.Height;
+
+  FormResize(Self);
+end;
+
+procedure TForm3.ButtonBackClick(Sender: TObject);
+begin
+  Close;
+end;
+
+end.

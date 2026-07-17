@@ -1,0 +1,37 @@
+﻿unit about_program;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ComCtrls;
+
+type
+  TFormprogram = class(TForm)
+    RichEdit1: TRichEdit;
+    Label1: TLabel;
+    Label2: TLabel;
+    procedure FormShow(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Formprogram: TFormprogram;
+
+implementation
+
+{$R *.dfm}
+
+procedure TFormprogram.FormShow(Sender: TObject);
+begin
+  RichEdit1.Lines.LoadFromFile('..\data\ygli\assets\extras\ОProgramme.rtf');
+  Color := RGB(31, 21, 5);
+  Label1.Caption := 'Выполнили:' + sLineBreak +
+                    'Семиков Даниил Александрович' + sLineBreak +
+                    'Кравчук Светозар Кириллович';
+end;
+
+end.

@@ -1,0 +1,22 @@
+program Topograf;
+
+uses
+  Forms,
+  about_program in '..\src\about_program.pas' {Formprogram},
+  instructions in '..\src\instructions.pas' {Forminstructions},
+  corners_25k in '..\src\corners_25k.pas' {Formcorners25k},
+  corners_50k in '..\src\corners_50k.pas' {Formcorners50k},
+  corners_100k in '..\src\corners_100k.pas' {Formcorners100k};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TFormprogram, Formprogram);
+  Application.CreateForm(TForminstructions, Forminstructions);
+  Application.CreateForm(TFormcorners25k, Formcorners25k);
+  Application.CreateForm(TFormcorners50k, Formcorners50k);
+  Application.CreateForm(TFormcorners100k, Formcorners100k);
+  Application.Run;
+end.

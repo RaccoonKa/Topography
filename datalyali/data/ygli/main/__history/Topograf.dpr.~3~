@@ -1,0 +1,17 @@
+program Topograf;
+
+uses
+  Forms,
+  menu in '..\src\menu.pas' {Formmenu},
+  about_program in '..\src\about_program.pas' {Formprogram},
+  instructions in '..\src\instructions.pas' {Forminstructions};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TFormmenu, Formmenu);
+  Application.CreateForm(TFormprogram, Formprogram);
+  Application.Run;
+end.

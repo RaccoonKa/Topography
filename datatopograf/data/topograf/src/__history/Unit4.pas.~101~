@@ -1,0 +1,486 @@
+﻿unit Unit4;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
+  GDIPAPI, GDIPOBJ;
+
+type
+  TSpeedButton = class(Vcl.Buttons.TSpeedButton)
+  protected
+    procedure Paint; override;
+  end;
+
+  TForm4 = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    FMainButtons: array[0..3] of TSpeedButton;
+    FMapButtons: array[0..3] of TSpeedButton;
+    FInMapMenu: Boolean;
+    FFonImage: TGPImage;
+    procedure CreateMainMenu;
+    procedure CreateMapMenu;
+    procedure ShowMainMenu;
+    procedure ShowMapMenu;
+    procedure FormDestroy(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure OnMapMenuBack(Sender: TObject);
+    procedure OnMapsClick(Sender: TObject);
+    procedure OnLearningClick(Sender: TObject);
+    procedure OnAboutClick(Sender: TObject);
+    procedure OnExitClick(Sender: TObject);
+    procedure OnChkalovskClick(Sender: TObject);
+    procedure OnSnov1966Click(Sender: TObject);
+    procedure OnSnov1991Click(Sender: TObject);
+  public
+  end;
+
+var
+  Form4: TForm4;
+
+implementation
+
+{$R *.dfm}
+
+uses Unit2, Unit5, Unit3, Unit6, Unit1;
+
+const
+  ButtonWidth = 300;
+  ButtonHeight = 60;
+  VerticalGap = 20;        // для главного меню
+  MapVerticalGap = 60;     // для меню выбора карт
+
+procedure TSpeedButton.Paint;
+var
+  graphics: TGPGraphics;
+  path, borderPath: TGPGraphicsPath;
+  brush: TGPSolidBrush;
+  pen: TGPPen;
+  rect: TGPRectF;
+  radius: Single;
+begin
+  inherited Paint;
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    radius := 20;
+
+    path := TGPGraphicsPath.Create;
+    try
+      rect.X := 0;
+      rect.Y := 0;
+      rect.Width := Width;
+      rect.Height := Height;
+      path.AddRectangle(rect);
+
+      path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      path.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      path.CloseFigure();
+
+      brush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+      try
+        graphics.FillPath(brush, path);
+      finally
+        brush.Free;
+      end;
+    finally
+      path.Free;
+    end;
+
+    pen := TGPPen.Create(MakeColor(255, 255, 215, 0), 2);
+    borderPath := TGPGraphicsPath.Create;
+    try
+      rect.X := 1;
+      rect.Y := 1;
+      rect.Width := Width - 2;
+      rect.Height := Height - 2;
+
+      borderPath.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      borderPath.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      borderPath.CloseFigure();
+
+      graphics.DrawPath(pen, borderPath);
+    finally
+      borderPath.Free;
+      pen.Free;
+    end;
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TForm4.FormCreate(Sender: TObject);
+begin
+  BorderStyle := bsNone;
+  Color := clBlack;
+  WindowState := wsMaximized;
+  DoubleBuffered := True;
+
+  if FileExists('..\data\topograf\assets\earth_maps\earth.png') then
+    FFonImage := TGPImage.Create('..\data\topograf\assets\earth_maps\earth.png')
+  else
+    FFonImage := nil;
+
+  Self.OnPaint := FormPaint;
+  Self.OnDestroy := FormDestroy;
+
+  CreateMainMenu;
+  CreateMapMenu;
+
+  Label1.Caption := 'Масштаб 1:100000';
+  Label1.Font.Size := 12;
+  Label1.Font.Color := clWhite;
+  Label1.Visible := False;
+
+  Label2.Caption := 'Масштаб 1:25000';
+  Label2.Font.Size := 12;
+  Label2.Font.Color := clWhite;
+  Label2.Visible := False;
+
+  Label3.Caption := 'Масштаб 1:50000';
+  Label3.Font.Size := 12;
+  Label3.Font.Color := clWhite;
+  Label3.Visible := False;
+
+  ShowMainMenu;
+end;
+
+procedure TForm4.FormDestroy(Sender: TObject);
+begin
+  FFonImage.Free;
+end;
+
+procedure TForm4.FormPaint(Sender: TObject);
+const
+  VisibilityRatio = 0.8; // 80% изображения видно
+var
+  graphics: TGPGraphics;
+  imgW, imgH: Integer;
+  targetH, targetW: Integer;
+  destRect1, destRect2: TGPRectF;
+begin
+  if FFonImage = nil then Exit;
+
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    imgW := FFonImage.GetWidth;
+    imgH := FFonImage.GetHeight;
+
+    // Высота изображения = 50% высоты клиентской области
+    targetH := Round(ClientHeight * 0.9);
+    targetW := Round(targetH * imgW / imgH);
+
+    // Левая нижняя картинка: сдвиг влево и вниз на 20% размера
+    destRect1.Width := targetW;
+    destRect1.Height := targetH;
+    destRect1.X := -Round(targetW * (1 - VisibilityRatio));
+    destRect1.Y := ClientHeight - Round(targetH * VisibilityRatio);
+
+    // Правая верхняя картинка: сдвиг вправо и вверх на 20% размера
+    destRect2.Width := targetW;
+    destRect2.Height := targetH;
+    destRect2.X := ClientWidth - Round(targetW * VisibilityRatio);
+    destRect2.Y := -Round(targetH * (1 - VisibilityRatio));
+
+    graphics.DrawImage(FFonImage, destRect1, 0, 0, imgW, imgH, UnitPixel);
+    graphics.DrawImage(FFonImage, destRect2, 0, 0, imgW, imgH, UnitPixel);
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TForm4.CreateMainMenu;
+const
+  Captions: array[0..3] of string = ('Карты', 'Обучение', 'О программе', 'Выход');
+var
+  events: array[0..3] of TNotifyEvent;
+  i: Integer;
+begin
+  events[0] := OnMapsClick;
+  events[1] := OnLearningClick;
+  events[2] := OnAboutClick;
+  events[3] := OnExitClick;
+
+  for i := 0 to 3 do
+  begin
+    FMainButtons[i] := TSpeedButton.Create(Self);
+    with FMainButtons[i] do
+    begin
+      Parent := Self;
+      Caption := Captions[i];
+      Flat := True;
+      Font.Color := $00D7FF;
+      Font.Size := 14;
+      Font.Name := 'Segoe UI';
+      Font.Style := [fsBold];
+      Cursor := crHandPoint;
+      Width := ButtonWidth;
+      Height := ButtonHeight;
+      OnClick := events[i];
+      Visible := True;
+    end;
+  end;
+end;
+
+procedure TForm4.CreateMapMenu;
+const
+  Captions: array[0..3] of string = ('Чкаловск (1986 г.)', 'СНОВ (1991 г.)', 'СНОВ (1966 г.)', 'Назад');
+var
+  events: array[0..3] of TNotifyEvent;
+  i: Integer;
+begin
+  events[0] := OnChkalovskClick;
+  events[1] := OnSnov1991Click;
+  events[2] := OnSnov1966Click;
+  events[3] := OnMapMenuBack;
+
+  for i := 0 to 3 do
+  begin
+    FMapButtons[i] := TSpeedButton.Create(Self);
+    with FMapButtons[i] do
+    begin
+      Parent := Self;
+      Caption := Captions[i];
+      Flat := True;
+      Font.Color := $00D7FF;
+      Font.Size := 14;
+      Font.Name := 'Segoe UI';
+      Font.Style := [fsBold];
+      Cursor := crHandPoint;
+      Width := ButtonWidth;
+      Height := ButtonHeight;
+      OnClick := events[i];
+      Visible := False;
+    end;
+  end;
+end;
+
+procedure TForm4.ShowMainMenu;
+var
+  i: Integer;
+begin
+  for i := 0 to 3 do
+    FMainButtons[i].Visible := True;
+  for i := 0 to 3 do
+    FMapButtons[i].Visible := False;
+  Label1.Visible := False;
+  Label2.Visible := False;
+  Label3.Visible := False;
+  FInMapMenu := False;
+  FormResize(Self);
+end;
+
+procedure TForm4.ShowMapMenu;
+var
+  i: Integer;
+begin
+  for i := 0 to 3 do
+    FMainButtons[i].Visible := False;
+  for i := 0 to 3 do
+    FMapButtons[i].Visible := True;
+  Label1.Visible := True;
+  Label2.Visible := True;
+  Label3.Visible := True;
+  FInMapMenu := True;
+  FormResize(Self);
+end;
+
+procedure TForm4.OnMapsClick(Sender: TObject);
+begin
+  ShowMapMenu;
+end;
+
+procedure TForm4.OnMapMenuBack(Sender: TObject);
+begin
+  ShowMainMenu;
+end;
+
+procedure TForm4.OnLearningClick(Sender: TObject);
+begin
+  if Form1 = nil then
+    Application.CreateForm(TForm1, Form1);
+  Form1.Show;
+end;
+
+procedure TForm4.OnAboutClick(Sender: TObject);
+begin
+  if Form3 = nil then
+    Application.CreateForm(TForm3, Form3);
+  Form3.Show;
+end;
+
+procedure TForm4.OnExitClick(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+procedure TForm4.OnChkalovskClick(Sender: TObject);
+var
+  F: TForm2;
+  i: Integer;
+begin
+  if Form3 = nil then
+    Application.CreateForm(TForm3, Form3);
+  if Assigned(Form1) then Form1.Hide;
+  if Assigned(Form3) then Form3.Hide;
+
+  for i := 0 to 3 do
+    FMapButtons[i].Enabled := False;
+
+  F := TForm2.Create(Self);
+  try
+    F.PopupParent := Self;
+    F.PopupMode := pmExplicit;
+    Self.FormStyle := fsStayOnTop;
+    F.ShowModal;
+  finally
+    if Assigned(Form1) then Form1.Hide;
+    if Assigned(Form3) then Form3.Hide;
+    F.Free;
+    Self.FormStyle := fsNormal;
+    Application.BringToFront;
+    SetForegroundWindow(Self.Handle);
+    Application.ProcessMessages;
+
+    for i := 0 to 3 do
+      FMapButtons[i].Enabled := True;
+  end;
+end;
+
+procedure TForm4.OnSnov1966Click(Sender: TObject);
+var
+  F: TForm5;
+  i: Integer;
+begin
+  if Form3 = nil then
+    Application.CreateForm(TForm3, Form3);
+  if Assigned(Form1) then Form1.Hide;
+  if Assigned(Form3) then Form3.Hide;
+
+  for i := 0 to 3 do
+    FMapButtons[i].Enabled := False;
+
+  F := TForm5.Create(Self);
+  try
+    F.PopupParent := Self;
+    F.PopupMode := pmExplicit;
+    Self.FormStyle := fsStayOnTop;
+    F.ShowModal;
+  finally
+    if Assigned(Form1) then Form1.Hide;
+    if Assigned(Form3) then Form3.Hide;
+    F.Free;
+    Self.FormStyle := fsNormal;
+    Application.BringToFront;
+    SetForegroundWindow(Self.Handle);
+    Application.ProcessMessages;
+
+    for i := 0 to 3 do
+      FMapButtons[i].Enabled := True;
+  end;
+end;
+
+procedure TForm4.OnSnov1991Click(Sender: TObject);
+var
+  F: TForm6;
+  i: Integer;
+begin
+  if Form3 = nil then
+    Application.CreateForm(TForm3, Form3);
+  if Assigned(Form1) then Form1.Hide;
+  if Assigned(Form3) then Form3.Hide;
+
+  for i := 0 to 3 do
+    FMapButtons[i].Enabled := False;
+
+  F := TForm6.Create(Self);
+  try
+    F.PopupParent := Self;
+    F.PopupMode := pmExplicit;
+    Self.FormStyle := fsStayOnTop;
+    F.ShowModal;
+  finally
+    if Assigned(Form1) then Form1.Hide;
+    if Assigned(Form3) then Form3.Hide;
+    F.Free;
+    Self.FormStyle := fsNormal;
+    Application.BringToFront;
+    SetForegroundWindow(Self.Handle);
+    Application.ProcessMessages;
+
+    for i := 0 to 3 do
+      FMapButtons[i].Enabled := True;
+  end;
+end;
+
+procedure TForm4.FormResize(Sender: TObject);
+var
+  i: Integer;
+  StartY, TotalHeight: Integer;
+begin
+  if FInMapMenu then
+  begin
+    TotalHeight := 4 * ButtonHeight + 3 * MapVerticalGap;
+    StartY := (Self.ClientHeight - TotalHeight) div 2;
+
+    for i := 0 to 3 do
+    begin
+      FMapButtons[i].Left := (Self.ClientWidth - ButtonWidth) div 2;
+      FMapButtons[i].Top := StartY + i * (ButtonHeight + MapVerticalGap);
+    end;
+
+    if Label1.Visible then
+    begin
+      Label1.Left := FMapButtons[0].Left + (FMapButtons[0].Width - Label1.Width) div 2;
+      Label1.Top := FMapButtons[0].Top + FMapButtons[0].Height + 10;
+    end;
+    if Label3.Visible then
+    begin
+      Label3.Left := FMapButtons[1].Left + (FMapButtons[1].Width - Label3.Width) div 2;
+      Label3.Top := FMapButtons[1].Top + FMapButtons[1].Height + 10;
+    end;
+    if Label2.Visible then
+    begin
+      Label2.Left := FMapButtons[2].Left + (FMapButtons[2].Width - Label2.Width) div 2;
+      Label2.Top := FMapButtons[2].Top + FMapButtons[2].Height + 10;
+    end;
+  end
+  else
+  begin
+    TotalHeight := 4 * ButtonHeight + 3 * VerticalGap;
+    StartY := (Self.ClientHeight - TotalHeight) div 2;
+
+    for i := 0 to 3 do
+    begin
+      FMainButtons[i].Left := (Self.ClientWidth - ButtonWidth) div 2;
+      FMainButtons[i].Top := StartY + i * (ButtonHeight + VerticalGap);
+    end;
+  end;
+  Self.Invalidate;
+end;
+
+procedure TForm4.FormShow(Sender: TObject);
+begin
+  Self.Left := 0;
+  Self.Top := 0;
+  Self.WindowState := wsMaximized;
+end;
+
+end.

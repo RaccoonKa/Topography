@@ -1,0 +1,544 @@
+﻿unit training;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Buttons, ExtCtrls, ImgList, MPlayer, ComCtrls, DBCtrls;
+
+type
+  TMode = (mdMenu, mdRectangular, mdGeographic);
+
+  TBar = class(TTrackBar)
+  private
+    procedure WMSetFocus(var Message: TWMSetFocus); message WM_SETFOCUS;
+  public
+    property OnMouseUp;
+    property OnMouseDown;
+    property OnMouseMove;
+  end;
+
+  TFormtraining = class(TForm)
+    Image1: TImage;
+    SpeedButton1: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    SpeedButton3: TSpeedButton;
+    SpeedButton4: TSpeedButton;
+    SpeedButton5: TSpeedButton;
+    Timer1: TTimer;
+    MediaPlayer1: TMediaPlayer;
+    Panel1: TPanel;
+    Timer2: TTimer;
+    RichEdit1: TRichEdit;
+    Label1: TLabel;
+    PanelMenu: TPanel;
+    LabelMenu: TLabel;
+    btnGeographic: TButton;
+    btnRectangular: TButton;
+    ImageGeo: TImage;
+    SpeedButtonGeoPrev: TSpeedButton;
+    SpeedButtonGeoNext: TSpeedButton;
+    TrackBarGeo: TTrackBar;
+    btnBack: TButton;
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure SpeedButton3MouseLeave(Sender: TObject);
+    procedure SpeedButton3MouseEnter(Sender: TObject);
+    procedure SpeedButton3Click(Sender: TObject);
+    procedure SpeedButton2MouseLeave(Sender: TObject);
+    procedure SpeedButton2MouseEnter(Sender: TObject);
+    procedure SpeedButton4MouseLeave(Sender: TObject);
+    procedure SpeedButton4MouseEnter(Sender: TObject);
+    procedure SpeedButton1MouseLeave(Sender: TObject);
+    procedure SpeedButton1MouseEnter(Sender: TObject);
+    procedure SpeedButton5MouseEnter(Sender: TObject);
+    procedure SpeedButton5MouseLeave(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
+    procedure TrackBar1Change(Sender: TObject);
+    procedure qMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure qMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure SpeedButton4Click(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure btnGeographicClick(Sender: TObject);
+    procedure btnRectangularClick(Sender: TObject);
+    procedure SpeedButtonGeoPrevClick(Sender: TObject);
+    procedure SpeedButtonGeoNextClick(Sender: TObject);
+    procedure TrackBarGeoChange(Sender: TObject);
+    procedure SpeedButtonGeoPrevMouseEnter(Sender: TObject);
+    procedure SpeedButtonGeoPrevMouseLeave(Sender: TObject);
+    procedure SpeedButtonGeoNextMouseEnter(Sender: TObject);
+    procedure SpeedButtonGeoNextMouseLeave(Sender: TObject);
+    procedure btnBackClick(Sender: TObject);
+  private
+    FMode: TMode;
+    N_geo: Integer;
+    procedure qMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure SetMode(AMode: TMode);
+    procedure LoadGeoStep(Step: Integer);
+    procedure InitRectangular;
+  public
+    { Public declarations }
+  end;
+
+var
+  Formtraining: TFormtraining;
+  Images1: array[1..3] of TBitmap;
+  N: Integer;
+  FirstPlay: Boolean;
+  Pause: Boolean;
+  Bar: TBar;
+  Down: Boolean;
+
+implementation
+
+{$R *.dfm}
+
+procedure TFormtraining.FormCreate(Sender: TObject);
+var
+  str: string;
+  i: Integer;
+begin
+  Formtraining.Color := RGB(0, 0, 0);
+  for i := 1 to 3 do
+  begin
+    str := '..\data\topograf\assets\slides\1' + IntToStr(i) + '.bmp';
+    Images1[i] := TBitmap.Create;
+    Images1[i].LoadFromFile(str);
+  end;
+  SpeedButton1.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P61.bmp');
+  SpeedButton5.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P51.bmp');
+  SpeedButton3.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P11.bmp');
+  SpeedButton2.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P41.bmp');
+  SpeedButton4.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P31.bmp');
+  RichEdit1.Clear;
+  MediaPlayer1.TimeFormat := tfMilliseconds;
+
+  Bar := TBar.Create(Self);
+  Bar.Parent := Self;
+  Bar.Top := 430;
+  Bar.Left := 19;
+  Bar.Width := 595;
+  Bar.Height := 20;
+  Bar.OnMouseUp := qMouseUp;
+  Bar.OnMouseMove := qMouseMove;
+  Bar.OnMouseDown := qMouseDown;
+  Bar.Enabled := False;
+  Bar.TabStop := False;
+  Bar.Visible := False;
+
+  Image1.Picture := nil;
+  MediaPlayer1.Display := Panel1;
+
+  SpeedButtonGeoPrev.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P41.bmp');
+  SpeedButtonGeoNext.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P31.bmp');
+
+  FMode := mdMenu;
+  SetMode(mdMenu);
+  Formtraining.Position := poScreenCenter;
+end;
+
+procedure TFormtraining.FormResize(Sender: TObject);
+begin
+  if Assigned(Bar) then
+  begin
+    Bar.Top := 430;
+    Bar.Left := 19;
+    Bar.Width := 595;
+  end;
+end;
+
+procedure TFormtraining.FormShow(Sender: TObject);
+begin
+  SetMode(FMode);
+end;
+
+procedure TFormtraining.SetMode(AMode: TMode);
+begin
+  FMode := AMode;
+  PanelMenu.Visible := (AMode = mdMenu);
+  SpeedButton1.Visible := (AMode = mdRectangular);
+  SpeedButton2.Visible := (AMode = mdRectangular);
+  SpeedButton3.Visible := (AMode = mdRectangular);
+  SpeedButton4.Visible := (AMode = mdRectangular);
+  SpeedButton5.Visible := False;
+  Bar.Visible := (AMode = mdRectangular);
+  Bar.Enabled := (AMode = mdRectangular);
+  Label1.Visible := (AMode <> mdMenu);
+  RichEdit1.Visible := (AMode <> mdMenu);
+  ImageGeo.Visible := (AMode = mdGeographic);
+  SpeedButtonGeoPrev.Visible := (AMode = mdGeographic);
+  SpeedButtonGeoNext.Visible := (AMode = mdGeographic);
+  TrackBarGeo.Visible := (AMode = mdGeographic);
+  btnBack.Visible := (AMode <> mdMenu);
+
+  if AMode = mdRectangular then
+  begin
+    Bar.Top := 430;
+    Bar.Left := 19;
+    Bar.Width := 595;
+  end;
+
+  if AMode <> mdRectangular then
+  begin
+    if MediaPlayer1.Mode = mpPlaying then
+      MediaPlayer1.Stop;
+    Timer1.Enabled := False;
+    Timer2.Enabled := False;
+    Panel1.Visible := False;
+  end;
+end;
+
+procedure TFormtraining.InitRectangular;
+begin
+  MediaPlayer1.FileName := '..\data\topograf\assets\extras\rec\instruction.mpg';
+  MediaPlayer1.Open;
+  MediaPlayer1.TimeFormat := tfMilliseconds;
+  MediaPlayer1.Display := Panel1;
+  N := 0;
+  Down := False;
+  Pause := True;
+  FirstPlay := True;
+  Panel1.Visible := False;
+  RichEdit1.Lines.Clear;
+  RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\rec\instruction.rtf');
+  Label1.Caption := 'Шаг: 1';
+end;
+
+procedure TFormtraining.btnBackClick(Sender: TObject);
+begin
+  SetMode(mdMenu);
+end;
+
+procedure TFormtraining.btnRectangularClick(Sender: TObject);
+begin
+  InitRectangular;
+  SetMode(mdRectangular);
+end;
+
+procedure TFormtraining.btnGeographicClick(Sender: TObject);
+begin
+  N_geo := 1;
+  TrackBarGeo.Position := 0;
+  LoadGeoStep(N_geo);
+  SetMode(mdGeographic);
+end;
+
+procedure TFormtraining.LoadGeoStep(Step: Integer);
+begin
+  if Step < 1 then Step := 1;
+  if Step > 4 then Step := 4;
+  ImageGeo.Picture.LoadFromFile('..\data\topograf\assets\Slides\inst' + IntToStr(Step) + '.bmp');
+  RichEdit1.Lines.Clear;
+  RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\geo\instruction_' + IntToStr(Step) + '.rtf');
+  Label1.Caption := 'Шаг: ' + IntToStr(Step) + '/4';
+  N_geo := Step;
+end;
+
+procedure TFormtraining.SpeedButtonGeoPrevClick(Sender: TObject);
+begin
+  if N_geo > 1 then
+  begin
+    LoadGeoStep(N_geo - 1);
+    TrackBarGeo.Position := N_geo - 1;
+  end;
+end;
+
+procedure TFormtraining.SpeedButtonGeoNextClick(Sender: TObject);
+begin
+  if N_geo < 4 then
+  begin
+    LoadGeoStep(N_geo + 1);
+    TrackBarGeo.Position := N_geo - 1;
+  end;
+end;
+
+procedure TFormtraining.TrackBarGeoChange(Sender: TObject);
+begin
+  N_geo := TrackBarGeo.Position + 1;
+  LoadGeoStep(N_geo);
+end;
+
+procedure TFormtraining.SpeedButtonGeoPrevMouseEnter(Sender: TObject);
+begin
+  SpeedButtonGeoPrev.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P42.bmp');
+end;
+
+procedure TFormtraining.SpeedButtonGeoPrevMouseLeave(Sender: TObject);
+begin
+  SpeedButtonGeoPrev.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P41.bmp');
+end;
+
+procedure TFormtraining.SpeedButtonGeoNextMouseEnter(Sender: TObject);
+begin
+  SpeedButtonGeoNext.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P32.bmp');
+end;
+
+procedure TFormtraining.SpeedButtonGeoNextMouseLeave(Sender: TObject);
+begin
+  SpeedButtonGeoNext.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P31.bmp');
+end;
+
+procedure TFormtraining.SpeedButton1Click(Sender: TObject);
+var
+  P, i: Integer;
+  M: array[1..6] of Integer;
+begin
+  M[1] := 0;
+  M[2] := 36300;
+  M[3] := 43000;
+  M[4] := 53210;
+  M[5] := 82200;
+  M[6] := MediaPlayer1.TrackLength[1];
+  P := MediaPlayer1.Position;
+  for i := 1 to 5 do
+  begin
+    if (P >= M[i]) and (P < M[i+1]) then
+    begin
+      if not Pause then
+      begin
+        MediaPlayer1.Position := M[i];
+        MediaPlayer1.Play;
+      end
+      else
+        MediaPlayer1.Position := M[i];
+    end;
+  end;
+end;
+
+procedure TBar.WMSetFocus(var Message: TWMSetFocus);
+begin
+  if Parent <> nil then
+    Parent.SetFocus;
+end;
+
+procedure TFormtraining.SpeedButton1MouseEnter(Sender: TObject);
+begin
+  SpeedButton1.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P62.bmp');
+end;
+
+procedure TFormtraining.SpeedButton1MouseLeave(Sender: TObject);
+begin
+  SpeedButton1.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P61.bmp');
+end;
+
+procedure TFormtraining.SpeedButton2Click(Sender: TObject);
+var
+  P, i: Integer;
+  M: array[1..6] of Integer;
+begin
+  M[1] := 0;
+  M[2] := 36300;
+  M[3] := 43000;
+  M[4] := 53210;
+  M[5] := 82200;
+  M[6] := MediaPlayer1.TrackLength[1];
+  P := MediaPlayer1.Position;
+  for i := 2 to 5 do
+  begin
+    if (P >= M[i]) and (P < M[i+1]) then
+    begin
+      if not Pause then
+      begin
+        MediaPlayer1.Position := M[i-1];
+        MediaPlayer1.Play;
+      end
+      else
+        MediaPlayer1.Position := M[i-1];
+    end;
+  end;
+  if (P >= M[1]) and (P < M[2]) then
+  begin
+    if not Pause then
+    begin
+      MediaPlayer1.Position := M[1];
+      MediaPlayer1.Play;
+    end
+    else
+      MediaPlayer1.Position := M[1];
+  end;
+end;
+
+procedure TFormtraining.SpeedButton2MouseEnter(Sender: TObject);
+begin
+  SpeedButton2.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P42.bmp');
+end;
+
+procedure TFormtraining.SpeedButton2MouseLeave(Sender: TObject);
+begin
+  SpeedButton2.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P41.bmp');
+end;
+
+procedure TFormtraining.SpeedButton3Click(Sender: TObject);
+begin
+  if Pause then
+  begin
+    if MediaPlayer1.Mode = mpNotReady then
+      MediaPlayer1.Open;
+    MediaPlayer1.TimeFormat := tfMilliseconds;
+    if MediaPlayer1.Position = MediaPlayer1.Length then
+      MediaPlayer1.Position := 0;
+    Bar.Enabled := True;
+    Panel1.Visible := True;
+    MediaPlayer1.Play;
+    Timer2.Enabled := True;
+  end
+  else
+    MediaPlayer1.Pause;
+  Pause := not Pause;
+end;
+
+procedure TFormtraining.SpeedButton3MouseEnter(Sender: TObject);
+begin
+  if Pause then
+    SpeedButton3.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P12.bmp')
+  else
+    SpeedButton3.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P22.bmp');
+end;
+
+procedure TFormtraining.SpeedButton3MouseLeave(Sender: TObject);
+begin
+  if Pause then
+    SpeedButton3.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P11.bmp')
+  else
+    SpeedButton3.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P21.bmp');
+end;
+
+procedure TFormtraining.SpeedButton4Click(Sender: TObject);
+var
+  P, i: Integer;
+  M: array[1..6] of Integer;
+begin
+  M[1] := 0;
+  M[2] := 36300;
+  M[3] := 43000;
+  M[4] := 53210;
+  M[5] := 82200;
+  M[6] := MediaPlayer1.TrackLength[1];
+  P := MediaPlayer1.Position;
+  for i := 1 to 4 do
+  begin
+    if (P >= M[i]) and (P < M[i+1]) then
+    begin
+      if not Pause then
+      begin
+        MediaPlayer1.Position := M[i+1];
+        MediaPlayer1.Play;
+      end
+      else
+        MediaPlayer1.Position := M[i+1];
+    end;
+  end;
+end;
+
+procedure TFormtraining.SpeedButton4MouseEnter(Sender: TObject);
+begin
+  SpeedButton4.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P32.bmp');
+end;
+
+procedure TFormtraining.SpeedButton4MouseLeave(Sender: TObject);
+begin
+  SpeedButton4.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P31.bmp');
+end;
+
+procedure TFormtraining.SpeedButton5MouseEnter(Sender: TObject);
+begin
+  SpeedButton5.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P52.bmp');
+end;
+
+procedure TFormtraining.SpeedButton5MouseLeave(Sender: TObject);
+begin
+  SpeedButton5.Glyph.LoadFromFile('..\data\topograf\assets\buttons_video\P51.bmp');
+end;
+
+procedure TFormtraining.Timer1Timer(Sender: TObject);
+begin
+  if N = 3 then
+    N := 0;
+  N := N + 1;
+  Image1.Picture.Bitmap := Images1[N];
+  MediaPlayer1.Play;
+  Timer1.Enabled := True;
+end;
+
+procedure TFormtraining.Timer2Timer(Sender: TObject);
+var
+  P: Integer;
+begin
+  if not Visible then Exit;
+  Bar.Max := MediaPlayer1.TrackLength[1];
+  Bar.Position := MediaPlayer1.Position;
+  P := MediaPlayer1.Position;
+  if (P < 36300) and (Label1.Caption <> 'Шаг: 1') then
+  begin
+    Label1.Caption := 'Шаг: 1';
+    RichEdit1.Lines.Clear;
+    RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\rec\instruction 1.rtf');
+  end;
+  if (P >= 36300) and (P < 43000) and (Label1.Caption <> 'Шаг: 2') then
+  begin
+    Label1.Caption := 'Шаг: 2';
+    RichEdit1.Lines.Clear;
+    RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\rec\instruction 2.rtf');
+  end;
+  if (P >= 43000) and (P < 53210) and (Label1.Caption <> 'Шаг: 3') then
+  begin
+    Label1.Caption := 'Шаг: 3';
+    RichEdit1.Lines.Clear;
+    RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\rec\instruction 3.rtf');
+  end;
+  if (P >= 53210) and (P < 82200) and (Label1.Caption <> 'Шаг: 4') then
+  begin
+    Label1.Caption := 'Шаг: 4';
+    RichEdit1.Lines.Clear;
+    RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\rec\instruction 4.rtf');
+  end;
+  if (P >= 82200) and (Label1.Caption <> 'Шаг: 5') then
+  begin
+    Label1.Caption := 'Шаг: 5';
+    RichEdit1.Lines.Clear;
+    RichEdit1.Lines.LoadFromFile('..\data\topograf\assets\extras\rec\instruction 5.rtf');
+  end;
+end;
+
+procedure TFormtraining.TrackBar1Change(Sender: TObject);
+begin
+  // заглушка
+end;
+
+procedure TFormtraining.qMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  Timer2.Enabled := True;
+  MediaPlayer1.Position := Bar.Position;
+  if not Pause then
+    MediaPlayer1.Play;
+  Down := False;
+end;
+
+procedure TFormtraining.qMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  Timer2.Enabled := False;
+  Down := True;
+  MediaPlayer1.Pause;
+  Bar.Position := Round((X - 11) / (Bar.Width - 22) * Bar.Max);
+  MediaPlayer1.Position := Bar.Position;
+end;
+
+procedure TFormtraining.qMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  if Down then
+  begin
+    Bar.Position := Round((X - 11) / (Bar.Width - 22) * Bar.Max);
+    MediaPlayer1.Position := Bar.Position;
+    MediaPlayer1.Play;
+    MediaPlayer1.Pause;
+  end;
+end;
+
+end.

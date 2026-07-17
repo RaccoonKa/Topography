@@ -1,0 +1,815 @@
+﻿unit Unit5;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, GDIPAPI, GDIPOBJ, ExtCtrls, StdCtrls, Buttons, jpeg, Unit1, Math;
+
+type
+  TForm5 = class(TForm)
+    ScrollBox1: TScrollBox;
+    Image1: TImage;
+    Panel1: TPanel;
+    Panel3: TPanel;
+    Bhide: TBitBtn;
+    Bznak1: TBitBtn;
+    Bznak2: TBitBtn;
+    Bznak4: TBitBtn;
+    Panel2: TPanel;
+    Edit1: TEdit;
+    BTest: TBitBtn;
+    Edit2: TEdit;
+    Bexit: TBitBtn;
+    SpeedButton1: TSpeedButton;
+    Edit3: TEdit;
+    Label4: TLabel;
+    SpeedButton2: TSpeedButton;
+    SpeedButton3: TSpeedButton;
+    Edit4: TEdit;
+    Label6: TLabel;
+    ComboBox1: TComboBox;
+    Edit5: TEdit;
+    Edit6: TEdit;
+    Edit7: TEdit;
+    Edit8: TEdit;
+    Edit15: TEdit;
+    Label5: TLabel;
+    ComboBox2: TComboBox;
+    Edit9: TEdit;
+    Edit12: TEdit;
+    Edit10: TEdit;
+    Edit11: TEdit;
+    Edit14: TEdit;
+    Edit13: TEdit;
+    Label7: TLabel;
+    Edit16: TEdit;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure FormDestroy(Sender: TObject);
+    procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure LPaint;
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+    function CtrlDown: Boolean;
+    procedure BFlagClick(Sender: TObject);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BFlagKeyPress(Sender: TObject; var Key: Char);
+    procedure BitBtn1KeyPress(Sender: TObject; var Key: Char);
+    procedure BTestClick(Sender: TObject);
+    procedure BexitClick(Sender: TObject);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure BhideClick(Sender: TObject);
+    procedure Bznak1Click(Sender: TObject);
+    procedure Bznak2Click(Sender: TObject);
+    procedure Bznak3Click(Sender: TObject);
+    procedure Bznak4Click(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure BexitMouseEnter(Sender: TObject);
+    procedure BexitMouseLeave(Sender: TObject);
+    procedure SpeedButton1MouseEnter(Sender: TObject);
+    procedure SpeedButton1MouseLeave(Sender: TObject);
+    procedure Bznak1MouseEnter(Sender: TObject);
+    procedure Bznak1MouseLeave(Sender: TObject);
+    procedure Bznak2MouseEnter(Sender: TObject);
+    procedure Bznak2MouseLeave(Sender: TObject);
+    procedure Bznak4MouseLeave(Sender: TObject);
+    procedure Bznak4MouseEnter(Sender: TObject);
+    procedure BhideMouseEnter(Sender: TObject);
+    procedure BhideMouseLeave(Sender: TObject);
+    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit2KeyPress(Sender: TObject; var Key: Char);
+    procedure BexitKeyPress(Sender: TObject; var Key: Char);
+    procedure Edit3KeyPress(Sender: TObject; var Key: Char);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure SpeedButton2MouseEnter(Sender: TObject);
+    procedure SpeedButton2MouseLeave(Sender: TObject);
+    procedure SpeedButton3MouseEnter(Sender: TObject);
+    procedure SpeedButton3MouseLeave(Sender: TObject);
+    procedure ComboBox2KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit4KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit5KeyPress(Sender: TObject; var Key: Char);
+    procedure BTestKeyPress(Sender: TObject; var Key: Char);
+    procedure ComboBox1KeyPress(Sender: TObject; var Key: Char);
+    procedure SpeedButton3Click(Sender: TObject);
+  private
+    graphicsGDIPlus: TGPGraphics;
+    Transportir: TGPImage;
+    Pen: TGPPen;
+    SolidBrush: TGPSolidBrush;
+    Font: TGPFont;
+    FontFamily: TGPFontFamily;
+    R: TGPRectF;
+    path: TGPGraphicsPath;
+    spin: Real;
+    MouseX, MouseY: Integer;
+    Zoom, LZoom: real;
+    T1, T2: TDateTime;
+    h, m, s, ms: word;
+    Image: TGPBitmap;
+    bitmap: TGPBitmap;
+    cBitmap: TGPCachedBitmap;
+    HightImage, WidthImage: integer;
+    X1, Y1, X2, Y2, X3, Y3, X4, Y4: INTEGER;
+    XX1, YY1, XX2, YY2, Det: Real;
+    XFirst, YFirst: INTEGER;
+    znak1: TGPImage;
+    znak2: TGPImage;
+    znak3: TGPImage;
+    znak4: TGPImage;
+    znak5: TGPImage;
+    znak6: TGPImage;
+    whatDraw: string;
+    FixZ: string;
+    FixLX, FixLY, FixFX, FixFY, FixFX2, FixFY2: Integer;
+    Tr, FixL: boolean;
+    FixSpin: real;
+    ScrollingDownY: Integer;
+    ScrollingDownPositionY: integer;
+    ScrollingDownX: Integer;
+    ScrollingDownPositionX: integer;
+    Scrolling: Boolean;
+  public
+    { Public declarations }
+  end;
+
+var
+  Form5: TForm5;
+
+implementation
+
+uses Unit3;
+
+{$R *.dfm}
+
+procedure TForm5.FormShow(Sender: TObject);
+begin
+  DoubleBuffered := True;
+  zoom := 1;
+  Lzoom := 2.93;
+  FixL := False;
+  pen := TGPPen.Create(MakeColor(255, 255, 0, 0), 2);
+
+  Bexit.Glyph.LoadFromFile('..\data\ygli\assets\green/Btnexitgreen.bmp');
+  SpeedButton1.Glyph.LoadFromFile('..\data\ygli\assets\green/Btn2New1.bmp');
+  Bhide.Glyph.LoadFromFile('..\data\ygli\assets\green/Bhide1.bmp');
+  Bznak1.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag11.bmp');
+  Bznak2.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag21.bmp');
+  Bznak4.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag41.bmp');
+
+  Panel1.Color := RGB(31, 21, 5);
+  Panel3.Color := RGB(31, 21, 5);
+  Image1.Cursor := crHandPoint;
+
+  Image1.Width := Round(2133 * zoom);
+  Image1.Height := Round(2679 * zoom);
+  Image := TGPBitmap.Create('..\data\ygli\assets\maps\map25k.jpg');
+
+  WidthImage := Round(2133 * zoom);
+  HightImage := Round(2679 * zoom);
+  R.X := 0; R.Y := 0;
+  R.Width := WidthImage; R.Height := HightImage;
+  bitmap := TGPBitmap.Create(WidthImage, HightImage);
+  graphicsGDIPlus := TGPGraphics.Create(bitmap);
+  graphicsGDIPlus.DrawImage(Image, R);
+  graphicsGDIPlus.Free;
+
+  graphicsGDIPlus := TGPGraphics.Create(Image1.Canvas.Handle);
+  cBitmap := TGPCachedBitmap.Create(bitmap, graphicsGDIPlus);
+  graphicsGDIPlus.DrawCachedBitmap(cBitmap, 0, 0);
+  graphicsGDIPlus.Free;
+
+  ScrollBox1.HorzScrollBar.Position := (Image1.Width div 2) - (ScrollBox1.ClientWidth div 2);
+  ScrollBox1.VertScrollBar.Position := (Image1.Height div 2) - (ScrollBox1.ClientHeight div 2);
+
+  XFirst := 80; YFirst := 20;
+  x1 := 152; y1 := 374;
+  x2 := 1098; y2 := 343;
+  x3 := 1136; y3 := 1289;
+  x4 := 190; y4 := 1320;
+
+  yy2 := (x2 - x1 + x3 - x4) / 16;
+  yy1 := (y2 - y1 + y3 - y4) / 16;
+  xx2 := (x4 - x1 + x3 - x2) / 16;
+  xx1 := (y4 - y1 + y3 - y2) / 16;
+  Det := xx1 * yy2 - xx2 * yy1;
+
+  znak1 := TGPImage.Create('..\data\ygli\assets\green\flag1.2.png');
+  znak2 := TGPImage.Create('..\data\ygli\assets\green\flag1.1.png');
+  znak3 := TGPImage.Create('..\data\ygli\assets\green\flag1.1.2.png');
+  znak4 := TGPImage.Create('..\data\ygli\assets\green\flag4.png');
+  Transportir := TGPImage.Create('..\data\ygli\assets\green\Transportir.png');
+
+  ComboBox1.Items.LoadFromFile('..\data\ygli\assets\extras\УвелУмен.txt');
+  ComboBox2.Items.LoadFromFile('..\data\ygli\assets\extras\Года.txt');
+
+  Bexit.SetFocus;
+  SpeedButton2.Glyph.LoadFromFile('..\data\ygli\assets\green\11.bmp');
+  SpeedButton3.Glyph.LoadFromFile('..\data\ygli\assets\green\31.bmp');
+end;
+
+procedure TForm5.FormDestroy(Sender: TObject);
+begin
+  Pen.Free;
+  SolidBrush.Free;
+  graphicsGDIPlus.Free;
+  Image.Free;
+  bitmap.Free;
+  cBitmap.Free;
+end;
+
+procedure TForm5.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ScrollingDownY := Y;
+  ScrollingDownPositionY := ScrollBox1.VertScrollBar.Position;
+  ScrollingDownX := X;
+  ScrollingDownPositionX := ScrollBox1.HorzScrollBar.Position;
+end;
+
+procedure TForm5.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  MouseX := X;
+  MouseY := Y;
+  LPaint;
+  if ssLeft in Shift then
+  begin
+    ScrollBox1.VertScrollBar.Position := ScrollingDownPositionY + (ScrollingDownY - Y);
+    ScrollingDownPositionY := ScrollBox1.VertScrollBar.Position;
+    ScrollBox1.HorzScrollBar.Position := ScrollingDownPositionX + (ScrollingDownX - X);
+    ScrollingDownPositionX := ScrollBox1.HorzScrollBar.Position;
+    ScrollBox1.Update;
+    Scrolling := True;
+  end;
+end;
+
+procedure TForm5.Image1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if not Scrolling then
+  begin
+    if (WhatDraw = 'Z2') then
+    begin
+      Image1.Cursor := crDefault;
+      FixZ := whatdraw;
+      FixFX2 := Round(MouseX / zoom);
+      FixFY2 := Round(MouseY / zoom);
+      BTest.Enabled := True;
+      WhatDraw := '0';
+      WhatDraw := 'Z3';
+      Tr := True;
+    end;
+
+    if (WhatDraw = 'Z1') then
+    begin
+      Image1.Cursor := crDefault;
+      FixZ := whatdraw;
+      FixFX := Round(MouseX / zoom);
+      FixFY := Round(MouseY / zoom);
+      BTest.Enabled := True;
+      WhatDraw := '0';
+      WhatDraw := 'Z2';
+    end;
+
+    if WhatDraw = 'L' then
+    begin
+      Image1.Cursor := crDefault;
+      FixL := True;
+      FixLX := Round(MouseX / zoom);
+      FixLY := Round(MouseY / zoom);
+      FixSpin := Spin;
+      WhatDraw := '0';
+    end;
+
+    if FixL and (Button = mbRight) then
+    begin
+      whatDraw := 'L';
+      FixL := False;
+      LPaint;
+    end;
+  end
+  else
+    Scrolling := False;
+end;
+
+procedure TForm5.LPaint;
+var
+  i, j: integer;
+begin
+  T1 := Now;
+  graphicsGDIPlus := TGPGraphics.Create(Image1.Canvas.Handle);
+  GraphicsGDIPlus.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+  R.X := 0; R.Y := 0;
+  R.Width := 2133 * zoom;
+  R.Height := 2679 * zoom;
+  graphicsGDIPlus.SetSmoothingMode(SmoothingModeAntiAlias);
+  graphicsGDIPlus.DrawCachedBitmap(cBitmap, 0, 0);
+
+  if whatDraw = 'Z1' then
+    graphicsGDIPlus.DrawImage(znak3, MouseX - 5, MouseY - 5, 10, 10);
+  if whatDraw = 'Z2' then
+  begin
+    graphicsGDIPlus.DrawImage(znak1, MouseX - 33, MouseY - 75, 75, 75);
+    graphicsGDIPlus.DrawImage(znak2, Round(FixFX * zoom) - 5, Round(FixFY * zoom) - 5, 10, 10);
+  end;
+  if whatDraw = 'Z3' then
+  begin
+    graphicsGDIPlus.DrawImage(znak1, Round(FixFX2 * zoom) - 33, Round(FixFY2 * zoom) - 75, 75, 75);
+    graphicsGDIPlus.DrawImage(znak2, Round(FixFX * zoom) - 5, Round(FixFY * zoom) - 5, 10, 10);
+    graphicsGDIPlus.DrawLine(pen, Round(FixFX * zoom), Round(FixFY * zoom),
+      Round(FixFX2 * zoom), Round(FixFY2 * zoom));
+  end;
+
+  if Tr then
+  begin
+    graphicsGDIPlus.TranslateTransform(MouseX, MouseY);
+    graphicsGDIPlus.RotateTransform(-spin);
+    graphicsGDIPlus.DrawImage(Transportir, -250, -150);
+  end;
+
+  Image1.Repaint;
+
+  T2 := Now;
+  DecodeTime(T2 - T1, h, m, s, ms);
+  Caption := (IntToStr(s) + ':' + IntToStr(ms) + '  ' + IntToStr(MouseX) + 'x' + IntToStr(MouseY) +
+    '  ' + FloatToStrF((4308 + ((MouseX / zoom - x1) * xx1 / det + (MouseY / zoom - y1) * yy1 / det)), ffFixed, 8, 1) + 'x' +
+         FloatToStrF((6070 - ((MouseX / zoom - x1) * xx2 / det + (MouseY / zoom - y1) * yy2 / det)), ffFixed, 8, 1) +
+         '   ' + FloatToStrF(ScrollBox1.VertScrollBar.Range, ffFixed, 8, 1) + ' ' +
+         FloatToStrF(ScrollBox1.VertScrollBar.Position + ScrollBox1.ClientHeight, ffFixed, 8, 1));
+end;
+
+procedure TForm5.SpeedButton1Click(Sender: TObject);
+begin
+  whatDraw := 'Z1';
+  Tr := False;
+end;
+
+procedure TForm5.SpeedButton1MouseEnter(Sender: TObject);
+begin
+  SpeedButton1.Glyph.LoadFromFile('..\data\ygli\assets\green/Btn2New2.bmp');
+end;
+
+procedure TForm5.SpeedButton1MouseLeave(Sender: TObject);
+begin
+  SpeedButton1.Glyph.LoadFromFile('..\data\ygli\assets\green/Btn2New1.bmp');
+end;
+
+procedure TForm5.SpeedButton2Click(Sender: TObject);
+begin
+  Unit1.Form1.Visible := True;
+end;
+
+procedure TForm5.SpeedButton2MouseEnter(Sender: TObject);
+begin
+  SpeedButton2.Glyph.LoadFromFile('..\data\ygli\assets\green\12.bmp');
+end;
+
+procedure TForm5.SpeedButton2MouseLeave(Sender: TObject);
+begin
+  SpeedButton2.Glyph.LoadFromFile('..\data\ygli\assets\green\11.bmp');
+end;
+
+procedure TForm5.SpeedButton3Click(Sender: TObject);
+begin
+  Unit3.Form3.Visible := True;
+end;
+
+procedure TForm5.SpeedButton3MouseEnter(Sender: TObject);
+begin
+  SpeedButton3.Glyph.LoadFromFile('..\data\ygli\assets\green\32.bmp');
+end;
+
+procedure TForm5.SpeedButton3MouseLeave(Sender: TObject);
+begin
+  SpeedButton3.Glyph.LoadFromFile('..\data\ygli\assets\green\31.bmp');
+end;
+
+procedure TForm5.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (key = '+') then
+  begin
+    zoom := zoom * 1.1;
+    Image1.Width := Round(2133 * zoom);
+    Image1.Height := Round(2679 * zoom);
+    Image1.Picture.Bitmap.Width := Round(2133 * zoom);
+    Image1.Picture.Bitmap.Height := Round(2679 * zoom);
+
+    WidthImage := Round(2133 * zoom);
+    HightImage := Round(2679 * zoom);
+    R.X := 0; R.Y := 0;
+    R.Width := WidthImage; R.Height := HightImage;
+    bitmap.Free;
+    bitmap := TGPBitmap.Create(WidthImage, HightImage);
+    graphicsGDIPlus := TGPGraphics.Create(bitmap);
+    GraphicsGDIPlus.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    graphicsGDIPlus.DrawImage(Image, R);
+    graphicsGDIPlus.Free;
+
+    graphicsGDIPlus := TGPGraphics.Create(Image1.Canvas.Handle);
+    cBitmap.Free;
+    cBitmap := TGPCachedBitmap.Create(bitmap, graphicsGDIPlus);
+    graphicsGDIPlus.DrawCachedBitmap(cBitmap, 0, 0);
+    graphicsGDIPlus.Free;
+    LPaint;
+  end;
+
+  if (key = '-') then
+  begin
+    zoom := zoom / 1.1;
+    Image1.Width := Round(2133 * zoom);
+    Image1.Height := Round(2679 * zoom);
+    Image1.Picture.Bitmap.Width := Round(2133 * zoom);
+    Image1.Picture.Bitmap.Height := Round(2679 * zoom);
+
+    WidthImage := Round(2133 * zoom);
+    HightImage := Round(2679 * zoom);
+    R.X := 0; R.Y := 0;
+    R.Width := WidthImage; R.Height := HightImage;
+    bitmap.Free;
+    bitmap := TGPBitmap.Create(WidthImage, HightImage);
+    graphicsGDIPlus := TGPGraphics.Create(bitmap);
+    graphicsGDIPlus.DrawImage(Image, R);
+    graphicsGDIPlus.Free;
+
+    graphicsGDIPlus := TGPGraphics.Create(Image1.Canvas.Handle);
+    cBitmap.Free;
+    cBitmap := TGPCachedBitmap.Create(bitmap, graphicsGDIPlus);
+    graphicsGDIPlus.DrawCachedBitmap(cBitmap, 0, 0);
+    graphicsGDIPlus.Free;
+    LPaint;
+  end;
+end;
+
+procedure TForm5.FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if CtrlDown then
+    spin := spin - 0.05
+  else
+    spin := spin - 3;
+  LPaint;
+end;
+
+procedure TForm5.FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if CtrlDown then
+    spin := spin + 0.05
+  else
+    spin := spin + 3;
+  LPaint;
+end;
+
+procedure TForm5.BexitKeyPress(Sender: TObject; var Key: Char);
+begin
+  FormKeyPress(self, key);
+end;
+
+procedure TForm5.BexitMouseEnter(Sender: TObject);
+begin
+  Bexit.Glyph.LoadFromFile('..\data\ygli\assets\green/Btnexitgreen2.bmp');
+end;
+
+procedure TForm5.BexitMouseLeave(Sender: TObject);
+begin
+  Bexit.Glyph.LoadFromFile('..\data\ygli\assets\green/Btnexitgreen.bmp');
+end;
+
+procedure TForm5.BFlagClick(Sender: TObject);
+begin
+  whatDraw := 'F';
+  Image1.Cursor := crNone;
+end;
+
+procedure TForm5.BFlagKeyPress(Sender: TObject; var Key: Char);
+begin
+  FormKeyPress(self, Key);
+end;
+
+procedure TForm5.BitBtn1Click(Sender: TObject);
+begin
+  Self.ActiveControl := nil;
+  if (whatDraw = 'L') or FixL then
+  begin
+    whatDraw := '0';
+    Image1.Repaint;
+  end
+  else
+    whatDraw := 'L';
+  FixL := False;
+  spin := 0;
+  LPaint;
+end;
+
+procedure TForm5.BitBtn1KeyPress(Sender: TObject; var Key: Char);
+begin
+  FormKeyPress(self, Key);
+end;
+
+procedure TForm5.BexitClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TForm5.BhideClick(Sender: TObject);
+begin
+  SpeedButton1.Visible := True;
+  Self.ActiveControl := nil;
+  Panel3.Caption := 'Новая задача';
+  while Bznak1.Width > 0 do
+    Bznak1.Width := Bznak1.Width - 1;
+  while Bznak2.Width > 0 do
+    Bznak2.Width := Bznak2.Width - 1;
+  while Bznak4.Width > 0 do
+    Bznak4.Width := Bznak4.Width - 1;
+  while Bhide.Width > 0 do
+    Bhide.Width := Bhide.Width - 1;
+  while Panel3.Width > 82 do
+    Panel3.Width := Panel3.Width - 1;
+end;
+
+procedure TForm5.BhideMouseEnter(Sender: TObject);
+begin
+  Bhide.Glyph.LoadFromFile('..\data\ygli\assets\green/Bhide2.bmp');
+end;
+
+procedure TForm5.BhideMouseLeave(Sender: TObject);
+begin
+  Bhide.Glyph.LoadFromFile('..\data\ygli\assets\green/Bhide1.bmp');
+end;
+
+procedure TForm5.BTestClick(Sender: TObject);
+var
+  i, j, q: integer;
+  text: string;
+  a, d, m: double;
+  R: array[1..4] of array[1..6] of string;
+  U: array[1..4] of double;
+  dat: array[1..4] of double;
+begin
+  if FixFX2 >= FixFX then
+    dat[2] := 0.16 + 180 / 3.1415 * ArcCos((FixFY - FixFY2) / sqrt((FixFX2 - FixFX) * (FixFX2 - FixFX) + (FixFY2 - FixFY) * (FixFY2 - FixFY)))
+  else
+    dat[2] := 0.16 + 180 + 180 / 3.1415 * ArcCos((FixFY2 - FixFY) / sqrt((FixFX - FixFX2) * (FixFX - FixFX2) + (FixFY2 - FixFY) * (FixFY2 - FixFY)));
+
+  R[1][1] := Edit1.Text;  R[1][2] := Edit9.Text;
+  R[2][1] := Edit2.Text;  R[2][2] := Edit10.Text;
+  R[3][1] := Edit3.Text;  R[3][2] := Edit11.Text;
+  R[4][1] := Edit4.Text;  R[4][2] := Edit5.Text;
+
+  if dat[2] + 2.4 < 360 then
+    dat[1] := (dat[2] + 2.4)
+  else
+    dat[1] := (dat[2] + 2.4) - 360;
+
+  if dat[2] - 6.2 >= 0 then
+    dat[3] := (dat[2] - 6.2)
+  else
+    dat[3] := (360 - (dat[2] - 6.2));
+
+  if Length(ComboBox2.Text) <> 0 then
+    dat[4] := (StrToInt(ComboBox2.Text) - 1965) / 60
+  else
+  begin
+    ComboBox2.Text := '2015';
+    dat[4] := (2015 - 1965) / 60;
+  end;
+
+  for i := 1 to 4 do
+  begin
+    if Length(TrimLeft(R[i][1])) = 0 then R[i][1] := '0';
+    if Length(TrimLeft(R[i][2])) = 0 then R[i][2] := '0';
+    U[i] := StrToFloat(R[i][1]) + StrToFloat(R[i][2]) / 60;
+  end;
+
+  for i := 1 to 4 do
+  begin
+    if Abs(U[i] - dat[i]) < (360 - Abs(U[i] - dat[i])) then
+    begin
+      R[i][3] := IntToStr(Trunc(Abs(U[i] - dat[i])));
+      R[i][4] := IntToStr(Trunc((Abs(U[i] - dat[i]) - StrToFloat(R[i][3])) * 60));
+    end
+    else
+    begin
+      R[i][3] := IntToStr(Trunc(360 - Abs(U[i] - dat[i])));
+      R[i][4] := IntToStr(Trunc((360 - Abs(U[i] - dat[i]) - StrToFloat(R[i][3])) * 60));
+    end;
+  end;
+
+  // Учёт знака изменения магнитного азимута
+  if ComboBox1.ItemIndex = 0 then q := 1
+  else if ComboBox1.ItemIndex = 1 then q := -1
+  else q := 0;
+
+  if Abs(q * U[4] - dat[4]) < (360 - Abs(q * U[4] - dat[4])) then
+  begin
+    R[4][3] := IntToStr(Trunc(Abs(q * U[4] - dat[4])));
+    R[4][4] := IntToStr(Round((Abs(q * U[4] - dat[4]) - StrToFloat(R[4][3])) * 60));
+  end
+  else
+  begin
+    R[4][3] := IntToStr(Trunc(360 - Abs(q * U[4] - dat[4])));
+    R[4][4] := IntToStr(Round((360 - Abs(q * U[4] - dat[4]) - StrToFloat(R[4][3])) * 60));
+  end;
+
+  // Форматирование вывода (пробелы)
+  for i := 1 to 4 do
+  begin
+    for j := 1 to (6 - Length(TrimLeft(R[i][3]))) do R[i][3] := '  ' + R[i][3];
+    for j := 1 to (2 - Length(TrimLeft(R[i][4]))) do R[i][4] := '  ' + R[i][4];
+    for j := 1 to (3 - Length(TrimLeft(R[i][1]))) do R[i][1] := '  ' + R[i][1];
+    for j := 1 to (2 - Length(TrimLeft(R[i][2]))) do R[i][2] := '  ' + R[i][2];
+  end;
+
+  // Оценка результата
+  for i := 1 to 3 do
+  begin
+    if (StrToFloat(R[i][3]) + StrToFloat(R[i][4]) / 60) <= 1.2 then
+      R[i][5] := '✓'
+    else
+      R[i][5] := '✕';
+    for j := 1 to 12 do R[i][5] := ' ' + R[i][5];
+  end;
+
+  if (StrToFloat(R[4][3]) + StrToFloat(R[4][4]) / 60) <= 0.02 then
+    R[4][5] := '✓'
+  else
+    R[4][5] := '✕';
+  for j := 1 to 12 do R[4][5] := ' ' + R[4][5];
+
+  // Вывод сообщения
+  ShowMessage(
+    'Величина                                    Значение    Ошибка    Результат' + #13#10 +
+    'Дирекционный угол                   ' + R[1][1] + '° ' + R[1][2] + #39 + R[1][3] + '° ' + R[1][4] + #39 + R[1][5] + #13#10 +
+    'Истинный азимут                        ' + R[2][1] + '° ' + R[2][2] + #39 + R[2][3] + '° ' + R[2][4] + #39 + R[2][5] + #13#10 +
+    'Магнитный азимут (1965 г.)      ' + R[3][1] + '° ' + R[3][2] + #39 + R[3][3] + '° ' + R[3][4] + #39 + R[3][5] + #13#10 +
+    'Изменение м-го азимута           ' + R[4][1] + '° ' + R[4][2] + #39 + R[4][3] + '° ' + R[4][4] + #39 + R[4][5] + #13#10
+  );
+end;
+
+procedure TForm5.BTestKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+procedure TForm5.Bznak1Click(Sender: TObject);
+begin
+  Self.ActiveControl := nil;
+  whatDraw := 'Z1';
+end;
+
+procedure TForm5.Bznak1MouseEnter(Sender: TObject);
+begin
+  Bznak1.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag12.bmp');
+end;
+
+procedure TForm5.Bznak1MouseLeave(Sender: TObject);
+begin
+  Bznak1.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag11.bmp');
+end;
+
+procedure TForm5.Bznak2Click(Sender: TObject);
+begin
+  whatDraw := 'Z2';
+  Self.ActiveControl := nil;
+end;
+
+procedure TForm5.Bznak2MouseEnter(Sender: TObject);
+begin
+  Bznak2.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag22.bmp');
+end;
+
+procedure TForm5.Bznak2MouseLeave(Sender: TObject);
+begin
+  Bznak2.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag21.bmp');
+end;
+
+procedure TForm5.Bznak3Click(Sender: TObject);
+begin
+  whatDraw := 'Z3';
+  Self.ActiveControl := nil;
+end;
+
+procedure TForm5.Bznak4Click(Sender: TObject);
+begin
+  whatDraw := 'Z4';
+  Self.ActiveControl := nil;
+end;
+
+procedure TForm5.Bznak4MouseEnter(Sender: TObject);
+begin
+  Bznak4.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag42.bmp');
+end;
+
+procedure TForm5.Bznak4MouseLeave(Sender: TObject);
+begin
+  Bznak4.Glyph.LoadFromFile('..\data\ygli\assets\green/Flag41.bmp');
+end;
+
+procedure TForm5.ComboBox1KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+procedure TForm5.ComboBox2KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end;
+end;
+
+function TForm5.CtrlDown: Boolean;
+var
+  State: TKeyboardState;
+begin
+  GetKeyboardState(State);
+  Result := ((State[vk_Control] and 128) <> 0);
+end;
+
+procedure TForm5.Edit1KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+procedure TForm5.Edit2KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+procedure TForm5.Edit3KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+procedure TForm5.Edit4KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+procedure TForm5.Edit5KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not (Key in ['0'..'9'])) and (not (Key = #44))
+    and (not (Key = #46)) then
+  begin
+    FormKeyPress(self, key);
+    Key := #0;
+  end
+  else if Key = #46 then
+    Key := #44;
+end;
+
+end.

@@ -1,0 +1,199 @@
+unit instruction;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Buttons,
+  GDIPAPI, GDIPOBJ;
+
+type
+  TSpeedButton = class(Vcl.Buttons.TSpeedButton)
+  private
+    FMouseIn: Boolean;
+    procedure CMMouseEnter(var Message: TMessage); message CM_MOUSEENTER;
+    procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
+  protected
+    procedure Paint; override;
+  end;
+
+  TFormInstruction = class(TForm)
+    RichEdit1: TRichEdit;
+    ButtonBack: TSpeedButton;
+    procedure ButtonBackClick(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure RichEdit1Enter(Sender: TObject);
+    procedure RichEdit1SelectionChange(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FormInstruction: TFormInstruction;
+
+implementation
+
+{$R *.dfm}
+
+{ TSpeedButton }
+
+procedure TSpeedButton.CMMouseEnter(var Message: TMessage);
+begin
+  inherited;
+  FMouseIn := True;
+  Invalidate;
+end;
+
+procedure TSpeedButton.CMMouseLeave(var Message: TMessage);
+begin
+  inherited;
+  FMouseIn := False;
+  Invalidate;
+end;
+
+procedure TSpeedButton.Paint;
+var
+  graphics: TGPGraphics;
+  path: TGPGraphicsPath;
+  brush: TGPSolidBrush;
+  pen: TGPPen;
+  rect: TGPRectF;
+  radius: Single;
+  textRect: TGPRectF;
+  fontFamily: TGPFontFamily;
+  font: TGPFont;
+  format: TGPStringFormat;
+  BGColor: TGPColor;
+  GoldColor: TGPColor;
+begin
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    radius := 20;
+    GoldColor := MakeColor(255, 255, 215, 0);
+
+    if FMouseIn then
+      BGColor := MakeColor(255, 255, 255, 255)
+    else
+      BGColor := MakeColor(255, 0, 0, 0);
+
+    brush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+    try
+      graphics.FillRectangle(brush, 0, 0, Width, Height);
+    finally
+      brush.Free;
+    end;
+
+    path := TGPGraphicsPath.Create;
+    try
+      rect.X := 1;
+      rect.Y := 1;
+      rect.Width := Width - 2;
+      rect.Height := Height - 2;
+
+      path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      path.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      path.CloseFigure();
+
+      brush := TGPSolidBrush.Create(BGColor);
+      try
+        graphics.FillPath(brush, path);
+      finally
+        brush.Free;
+      end;
+
+      pen := TGPPen.Create(GoldColor, 2);
+      try
+        graphics.DrawPath(pen, path);
+      finally
+        pen.Free;
+      end;
+    finally
+      path.Free;
+    end;
+
+    textRect.X := 0;
+    textRect.Y := 0;
+    textRect.Width := Width;
+    textRect.Height := Height;
+
+    fontFamily := TGPFontFamily.Create('Segoe UI');
+    font := TGPFont.Create(fontFamily, 14, FontStyleBold, UnitPoint);
+    format := TGPStringFormat.Create;
+    format.SetAlignment(StringAlignmentCenter);
+    format.SetLineAlignment(StringAlignmentCenter);
+
+    brush := TGPSolidBrush.Create(GoldColor);
+    try
+      graphics.DrawString(Caption, -1, font, textRect, format, brush);
+    finally
+      brush.Free;
+      font.Free;
+      fontFamily.Free;
+      format.Free;
+    end;
+
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormInstruction.ButtonBackClick(Sender: TObject);
+begin
+  Self.Close;
+end;
+
+procedure TFormInstruction.FormPaint(Sender: TObject);
+begin
+  Canvas.Pen.Color := $00D7FF;
+  Canvas.Pen.Width := 2;
+  Canvas.Brush.Style := bsClear;
+  Canvas.Rectangle(0, 0, ClientWidth, ClientHeight);
+end;
+
+procedure TFormInstruction.FormShow(Sender: TObject);
+var
+  FilePath: string;
+begin
+  RichEdit1.Clear;
+
+  FilePath := ExpandFileName(ExtractFilePath(Application.ExeName) + '..\data\cwtopograf\assets\extras\guide.rtf');
+
+  if FileExists(FilePath) then
+  begin
+    RichEdit1.PlainText := False;
+    RichEdit1.Lines.LoadFromFile(FilePath);
+
+    RichEdit1.SelectAll;
+    RichEdit1.SelAttributes.Color := clWhite;
+    RichEdit1.SelLength := 0;
+  end
+  else
+  begin
+    ShowMessage('Файл guide.rtf не найден :(');
+  end;
+
+  RichEdit1.SetFocus;
+  HideCaret(RichEdit1.Handle);
+  ActiveControl := nil;
+  Self.DoubleBuffered := True;
+end;
+
+procedure TFormInstruction.RichEdit1Enter(Sender: TObject);
+begin
+  HideCaret(RichEdit1.Handle);
+end;
+
+procedure TFormInstruction.RichEdit1SelectionChange(Sender: TObject);
+begin
+  HideCaret(RichEdit1.Handle);
+end;
+
+end.

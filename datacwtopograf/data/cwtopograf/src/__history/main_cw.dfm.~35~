@@ -1,0 +1,106 @@
+object Formmaincw: TFormmaincw
+  Left = 0
+  Top = 0
+  BorderStyle = bsNone
+  Caption = 'cw_topograf'
+  ClientHeight = 480
+  ClientWidth = 640
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnPaint = FormPaint
+  OnResize = FormResize
+  TextHeight = 15
+  object LabelCredits: TLabel
+    Left = 544
+    Top = 20
+    Width = 76
+    Height = 17
+    Alignment = taRightJustify
+    Caption = 'LabelCredits'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGold
+    Font.Height = -13
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object ImageLogo: TPaintBox
+    Left = 498
+    Top = 384
+    Width = 299
+    Height = 268
+    OnPaint = ImageLogoPaint
+  end
+  object ButtonTheory: TSpeedButton
+    Left = 170
+    Top = 100
+    Width = 300
+    Height = 60
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
+    OnClick = ButtonTheoryClick
+  end
+  object ButtonPractice: TSpeedButton
+    Left = 170
+    Top = 250
+    Width = 300
+    Height = 60
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
+    OnClick = ButtonPracticeClick
+  end
+  object ButtonInstruction: TSpeedButton
+    Left = 239
+    Top = 289
+    Width = 130
+    Height = 45
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
+    OnClick = ButtonInstructionClick
+  end
+  object ButtonResults: TSpeedButton
+    Left = 235
+    Top = 351
+    Width = 130
+    Height = 45
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
+    OnClick = ButtonResultsClick
+  end
+  object ButtonExit: TSpeedButton
+    Left = 241
+    Top = 409
+    Width = 130
+    Height = 45
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = [fsBold]
+    ParentFont = False
+    OnClick = ButtonExitClick
+  end
+end

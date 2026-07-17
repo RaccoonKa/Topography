@@ -1,0 +1,35 @@
+object Formprogram: TFormprogram
+  Left = 0
+  Top = 0
+  BorderStyle = bsNone
+  Caption = ''
+  ClientHeight = 600
+  ClientWidth = 800
+  Color = clBlack
+  WindowState = wsMaximized
+  OnCreate = FormCreate
+  OnResize = FormResize
+  OnShow = FormShow
+  TextHeight = 13
+  object RichEdit1: TRichEdit
+    Left = 60
+    Top = 90
+    Width = 680
+    Height = 420
+    BorderStyle = bsNone
+    Color = clBlack
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    Lines.Strings = (
+      '')
+    ParentFont = False
+    ReadOnly = True
+    ScrollBars = ssVertical
+    TabOrder = 0
+    OnEnter = RichEdit1Enter
+    OnSelectionChange = RichEdit1SelectionChange
+  end
+end

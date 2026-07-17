@@ -1,0 +1,1035 @@
+﻿unit coords_100k;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, GDIPAPI, GDIPOBJ, ExtCtrls, StdCtrls, Buttons, jpeg, math, PngImage;
+
+type
+  TFormcoords100k = class(TForm)
+    ScrollBox1: TScrollBox;
+    Image1: TImage;
+    Panel1: TPanel;
+    BitBtn1: TBitBtn;
+    BitBtnProtractor: TBitBtn;
+    PanelLeft: TPanel;
+    Bznak1: TBitBtn;
+    Bhide: TBitBtn;
+    PanelGeo: TPanel;
+    PanelRect: TPanel;
+    PanelAngles: TPanel;
+    PanelButtons: TPanel;
+    ButtonNext: TButton;
+    ButtonFinish: TBitBtn;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    Label14: TLabel;
+    Label15: TLabel;
+    Label16: TLabel;
+    Edit4: TEdit;
+    Edit5: TEdit;
+    Edit6: TEdit;
+    Edit7: TEdit;
+    Edit8: TEdit;
+    Edit9: TEdit;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Edit1: TEdit;
+    Edit2: TEdit;
+    Edit3: TEdit;
+    Label17: TLabel;
+    Label18: TLabel;
+    Label19: TLabel;
+    Label20: TLabel;
+    Label21: TLabel;
+    Label22: TLabel;
+    Label23: TLabel;
+    Label24: TLabel;
+    Label25: TLabel;
+    Label26: TLabel;
+    Label27: TLabel;
+    Label28: TLabel;
+    Label29: TLabel;
+    Label30: TLabel;
+    Label31: TLabel;
+    Label32: TLabel;
+    Edit10: TEdit;
+    Edit11: TEdit;
+    Edit12: TEdit;
+    Edit13: TEdit;
+    Edit14: TEdit;
+    Edit15: TEdit;
+    Edit16: TEdit;
+    Edit17: TEdit;
+    ComboBox1: TComboBox;
+    ComboBox2: TComboBox;
+    Label5: TLabel;
+    Label11: TLabel;
+    Label12: TLabel;
+    Label13: TLabel;
+    procedure FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+      MousePos: TPoint; var Handled: Boolean);
+    procedure FormDestroy(Sender: TObject);
+    procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    Procedure LPaint;
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure FormShow(Sender: TObject);
+    Function  CtrlDown : Boolean;
+    procedure BitBtn1Click(Sender: TObject);
+    procedure BitBtn1KeyPress(Sender: TObject; var Key: Char);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure BhideClick(Sender: TObject);
+    procedure Bznak1Click(Sender: TObject);
+    procedure BitBtn1MouseEnter(Sender: TObject);
+    procedure BitBtn1MouseLeave(Sender: TObject);
+    procedure Bznak1MouseEnter(Sender: TObject);
+    procedure Bznak1MouseLeave(Sender: TObject);
+    procedure BhideMouseEnter(Sender: TObject);
+    procedure BhideMouseLeave(Sender: TObject);
+    procedure Edit1KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit2KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit3KeyPress(Sender: TObject; var Key: Char);
+    procedure ButtonNextClick(Sender: TObject);
+    procedure ButtonFinishClick(Sender: TObject);
+    procedure ComboBox1KeyPress(Sender: TObject; var Key: Char);
+    procedure ComboBox2KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit10KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit11KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit12KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit13KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit14KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit15KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit16KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit17KeyPress(Sender: TObject; var Key: Char);
+    procedure BitBtnProtractorClick(Sender: TObject);
+    procedure BitBtnProtractorMouseEnter(Sender: TObject);
+    procedure BitBtnProtractorMouseLeave(Sender: TObject);
+
+  private
+    graphicsGDIPlus: TGPGraphics;
+    Pen           : TGPPen;
+    R             : TGPRectF;
+    spin          : Real;
+    MouseX, MouseY: Integer;
+    Zoom, LZoom   : real;
+    T1, T2        : TDateTime;
+    h,m,s, ms     : word;
+    Image         : TGPBitMap;
+    bitmap        : TGPBitmap;
+    cBitmap       : TGPCachedBitmap;
+    HightImage,WidthImage : integer;
+    X1,Y1,X2,Y2,X3,Y3,X4,Y4: INTEGER;
+    XX1,YY1,XX2,YY2,Det: Real;
+    XFirst, YFirst:INTEGER;
+    znak1: TGPImage;
+    znak2: TGPImage;
+    znak3: TGPImage;
+    znak4: TGPImage;
+    Transportir   : TGPImage;
+    whatDraw: string;
+    FixZ    : string;
+    FixLX,FixLY, FixFX,FixFY:Integer;
+    FixL:boolean;
+    FixSpin:real;
+    ScrollingDownY:Integer;
+    ScrollingDownPositionY:integer;
+    ScrollingDownX:Integer;
+    ScrollingDownPositionX:integer;
+    Scrolling:Boolean;
+    FFontFamily: TGPFontFamily;
+    FFont: TGPFont;
+    FTextBrush: TGPSolidBrush;
+    TaskStage: Integer;
+    FixFX2, FixFY2: Integer;
+    FixZ2: string;
+    TempGeoResult: string;
+    TempRectResult: string;
+    Tr: Boolean;
+    LinePen: TGPPen;
+    FixTr: Boolean;
+    FixTrX, FixTrY: Integer;
+
+    procedure GenerateRandomTask;
+    procedure FocusOnFlag;
+    procedure UpdateControlsVisibility;
+  public
+  end;
+
+var
+  Formcoords100k: TFormcoords100k;
+
+implementation
+
+{$R *.dfm}
+
+uses results;
+
+const
+  ZNAK1_SIZE = 12;
+  ZNAK1_OFFSET = ZNAK1_SIZE div 2;
+
+procedure TFormcoords100k.FocusOnFlag;
+begin
+  if TaskStage = 1 then
+  begin
+    ScrollBox1.HorzScrollBar.Position := Round(FixFX * zoom) - (ScrollBox1.ClientWidth div 2);
+    ScrollBox1.VertScrollBar.Position := Round(FixFY * zoom) - (ScrollBox1.ClientHeight div 2);
+  end
+  else
+  begin
+    ScrollBox1.HorzScrollBar.Position := Round(FixFX2 * zoom) - (ScrollBox1.ClientWidth div 2);
+    ScrollBox1.VertScrollBar.Position := Round(FixFY2 * zoom) - (ScrollBox1.ClientHeight div 2);
+  end;
+end;
+
+procedure TFormcoords100k.UpdateControlsVisibility;
+begin
+
+  PanelGeo.Visible := False;
+  PanelRect.Visible := False;
+  PanelAngles.Visible := False;
+
+  case TaskStage of
+    1: PanelGeo.Visible := True;
+    2: PanelRect.Visible := True;
+    3: PanelAngles.Visible := True;
+  end;
+
+  ButtonFinish.Visible := (TaskStage = 3);
+  ButtonNext.Visible := (TaskStage <> 3);
+  BitBtn1.Visible := (TaskStage <> 3);
+  BitBtnProtractor.Visible := (TaskStage = 3);
+end;
+
+procedure TFormcoords100k.GenerateRandomTask;
+begin
+  TaskStage := 1;
+  Tr := False;
+  FixTr := False;
+  whatDraw := '0';
+  FixZ := 'Z1';
+  FixL := False;
+
+  FixFX := 250 + Random(1300);
+  FixFY := 250 + Random(1900);
+
+  Edit1.Text := ''; Edit2.Text := ''; Edit3.Text := '';
+  Edit4.Text := ''; Edit5.Text := ''; Edit6.Text := '';
+  Edit7.Text := ''; Edit8.Text := ''; Edit9.Text := '';
+  Edit10.Text := ''; Edit11.Text := '';
+  Edit12.Text := ''; Edit13.Text := '';
+  Edit14.Text := ''; Edit15.Text := '';
+  Edit16.Text := ''; Edit17.Text := '';
+
+  UpdateControlsVisibility;
+  ButtonNext.Caption := 'Второе задание';
+
+  LPaint;
+  FocusOnFlag;
+end;
+
+procedure LoadPngToGlyph(btn: TBitBtn; const FileName: string);
+var
+  png: TPngImage;
+  bmp: TBitmap;
+  gpBitmap: TGPBitmap;
+  gpGraphics: TGPGraphics;
+  destRect: TRect;
+  pngStream: TMemoryStream;
+begin
+  if not FileExists(FileName) then Exit;
+  png := TPngImage.Create;
+  bmp := TBitmap.Create;
+  pngStream := TMemoryStream.Create;
+  try
+    png.LoadFromFile(FileName);
+    png.SaveToStream(pngStream);
+    pngStream.Position := 0;
+    gpBitmap := TGPBitmap.Create(TStreamAdapter.Create(pngStream));
+    bmp.Width := btn.Width;
+    bmp.Height := btn.Height;
+    bmp.Canvas.Brush.Color := clBtnFace;
+    bmp.Canvas.FillRect(Rect(0, 0, bmp.Width, bmp.Height));
+    gpGraphics := TGPGraphics.Create(bmp.Canvas.Handle);
+    try
+      gpGraphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+      gpGraphics.SetSmoothingMode(SmoothingModeAntiAlias);
+      gpGraphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+      if (gpBitmap.GetWidth > 0) and (gpBitmap.GetHeight > 0) then
+      begin
+        destRect := Rect(8, 8, bmp.Width - 8, bmp.Height - 8);
+        if (Double(gpBitmap.GetWidth) / Double(gpBitmap.GetHeight)) > (destRect.Width / destRect.Height) then
+        begin
+          destRect.Bottom := destRect.Top + Round(destRect.Width * Double(gpBitmap.GetHeight) / Double(gpBitmap.GetWidth));
+          OffsetRect(destRect, 0, (bmp.Height - destRect.Height) div 2 - 4);
+        end
+        else
+        begin
+          destRect.Right := destRect.Left + Round(destRect.Height * Double(gpBitmap.GetWidth) / Double(gpBitmap.GetHeight));
+          OffsetRect(destRect, (bmp.Width - destRect.Width) div 2 - 4, 0);
+        end;
+      end
+      else
+        destRect := Rect(0, 0, bmp.Width, bmp.Height);
+      gpGraphics.DrawImage(gpBitmap,
+        MakeRect(destRect.Left, destRect.Top,
+                 destRect.Right - destRect.Left,
+                 destRect.Bottom - destRect.Top),
+        0, 0, gpBitmap.GetWidth, gpBitmap.GetHeight, UnitPixel);
+    finally
+      gpGraphics.Free;
+      gpBitmap.Free;
+    end;
+    btn.Glyph := bmp;
+  finally
+    pngStream.Free;
+    png.Free;
+    bmp.Free;
+  end;
+end;
+
+procedure TFormcoords100k.FormShow(Sender: TObject);
+begin
+  zoom:=1;
+  Lzoom:=3;
+  FixL:=False;
+  spin:=0;
+  Tr:=False;
+  FixTr := False;
+  pen:= TGPPen.Create(MakeColor(255, 255, 0, 0), 2);
+  LinePen := TGPPen.Create(MakeColor(255, 0, 0, 0), 0.5);
+
+  BitBtn1.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Btn2Theg1.bmp');
+  LoadPngToGlyph(BitBtnProtractor, '..\data\cwtopograf\assets\green\protractor1.png');
+  Bhide.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Bhide1.bmp');
+  Bznak1.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Flag11.bmp');
+
+  ScrollBox1.OnMouseWheelDown := FormMouseWheelDown;
+  ScrollBox1.OnMouseWheelUp := FormMouseWheelUp;
+
+  Panel1.Color:=RGB(31,21,5);
+  PanelLeft.Color:=RGB(31,21,5);
+  Image1.Cursor:=crHandPoint;
+
+  Image1.Width:=Round(2043*zoom);
+  Image1.Height:=Round(2566*zoom);
+  Image:= TGPBitMap.Create('..\data\cwtopograf\assets\maps\map100k.jpg');
+
+  WidthImage:=Round(2043*zoom);
+  HightImage:=Round(2566*zoom);
+  R.X :=  0 ;  R.Y := 0;
+  R.Width := WidthImage;  R.Height := HightImage;
+  Bitmap:=TGPBitmap.Create(WidthImage,HightImage);
+  graphicsGDIPlus:= TGPGraphics.Create(Bitmap);
+  graphicsGDIPlus.drawImage(Image,R);
+  graphicsGDIPlus.Free;
+
+  graphicsGDIPlus:= TGPGraphics.Create(Image1.Canvas.Handle);
+  cBitmap:= TGPCachedBitmap.Create(BitMap, graphicsGDIPlus);
+  graphicsGDIPlus.DrawCachedBitmap(cBitMap,0,0);
+  graphicsGDIPlus.Free;
+
+  XFirst:=80; YFirst:=20;
+  x1:=214; y1:=238;
+  x2:=685; y2:=223;
+  x3:=699; y3:=694;
+  x4:=228; y4:=708;
+  yy2:=(x2-x1+x3-x4)/16; yy1:=(y2-y1+y3-y4)/16;
+  xx2:=(x4-x1+x3-x2)/16; xx1:=(y4-y1+y3-y2)/16;
+  Det:=xx1*yy2-xx2*yy1;
+
+  znak1:=TGPImage.Create('..\data\cwtopograf\assets\green\flag1.1.png');
+  znak2:=TGPImage.Create('..\data\cwtopograf\assets\green\flag1.png');
+  Transportir := TGPImage.Create('..\data\cwtopograf\assets\green\Transportir.png');
+
+  FFontFamily := TGPFontFamily.Create('Times New Roman');
+  FFont := TGPFont.Create(FFontFamily, 9, FontStyleRegular, UnitPixel);
+  FTextBrush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+
+  ComboBox1.Items.LoadFromFile('..\data\cwtopograf\assets\extras\УвелУмен.txt');
+  ComboBox2.Items.LoadFromFile('..\data\cwtopograf\assets\extras\Года.txt');
+  ComboBox1.ItemIndex := -1;
+  ComboBox2.Text := '';
+
+  Randomize;
+  GenerateRandomTask;
+end;
+
+procedure TFormcoords100k.FormDestroy(Sender: TObject);
+begin
+  Pen.Free;
+  LinePen.Free;
+  Image.Free;
+  BitMap.Free;
+  cBitmap.Free;
+  znak1.Free;
+  znak2.Free;
+  Transportir.Free;
+  FFont.Free;
+  FFontFamily.Free;
+  FTextBrush.Free;
+end;
+
+procedure TFormcoords100k.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ScrollingDownY:=Y;
+  ScrollingDownPositionY:=ScrollBox1.VertScrollBar.Position;
+  ScrollingDownX:=X;
+  ScrollingDownPositionX:=ScrollBox1.HorzScrollBar.Position;
+end;
+
+procedure TFormcoords100k.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  MouseX:=x;
+  MouseY:=y;
+  if (whatDraw <> '0') or FixL or (TaskStage = 3) then
+    Lpaint;
+  if ssLeft in Shift then
+  begin
+    ScrollBox1.VertScrollBar.Position:=ScrollingDownPositionY+(ScrollingDownY-Y);
+    ScrollingDownPositionY:= ScrollBox1.VertScrollBar.Position;
+    ScrollBox1.HorzScrollBar.Position:=ScrollingDownPositionX+(ScrollingDownX-X);
+    ScrollingDownPositionX:= ScrollBox1.HorzScrollBar.Position;
+    ScrollBox1.Update;
+    Scrolling:=True;
+  end;
+end;
+
+procedure TFormcoords100k.Image1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if not Scrolling then
+  begin
+    if whatDraw = 'L' then
+    begin
+      Image1.Cursor := crDefault;
+      FixL := true;
+      FixLx := Round(MouseX / zoom);
+      FixLy := Round(MouseY / zoom);
+      FixSpin := Spin;
+      whatDraw := '0'
+    end;
+    if FixL and (Button = mbRight) then
+    begin
+      whatDraw := 'L';
+      FixL := false;
+      Lpaint;
+    end;
+
+    if (TaskStage = 3) and Tr then
+    begin
+      if (Button = mbLeft) and (not FixTr) then
+      begin
+        FixTr := True;
+        FixTrX := MouseX;
+        FixTrY := MouseY;
+      end
+      else if (Button = mbRight) and FixTr then
+      begin
+        FixTr := False;
+        Lpaint;
+      end;
+    end;
+  end
+  else Scrolling := False;
+end;
+
+Procedure TFormcoords100k.LPaint;
+var i: integer;
+    tipX, tipY: Integer;
+    path: TGPGraphicsPath;
+    solidBrush: TGPSolidBrush;
+    fontFamily: TGPFontFamily;
+    font: TGPFont;
+begin
+  T1:=now;
+  graphicsGDIPlus:= TGPGraphics.Create(Image1.Canvas.Handle);
+  GraphicsGDIPlus.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+  R.X := 0 ;  R.Y :=0;
+  R.Width := Round(2043*zoom);  R.Height := Round(2566*zoom);
+  graphicsGDIPlus.SetSmoothingMode(SmoothingModeAntiAlias);
+  graphicsGDIPlus.DrawCachedBitmap(cBitMap,0,0);
+
+  if FixZ='Z1' then graphicsGDIPlus.DrawImage(znak1,FixFX*zoom-ZNAK1_OFFSET,FixFy*zoom-ZNAK1_OFFSET,ZNAK1_SIZE,ZNAK1_SIZE);
+  if FixZ='Z2' then graphicsGDIPlus.DrawImage(znak2,FixFX*zoom-36,FixFy*zoom-63,75,75);
+  if FixZ='Z3' then graphicsGDIPlus.DrawImage(znak3,FixFX*zoom-75,FixFy*zoom-38,75,75);
+  if FixZ='Z4' then graphicsGDIPlus.DrawImage(znak4,FixFX*zoom-37,FixFy*zoom-62,75,75);
+
+  if TaskStage >= 2 then
+  begin
+    if TaskStage = 3 then
+    begin
+      tipX := Round(FixFX2 * zoom - 2);
+      tipY := Round(FixFY2 * zoom + 12);
+      graphicsGDIPlus.DrawLine(pen, Round(FixFX * zoom), Round(FixFY * zoom), tipX, tipY);
+    end;
+
+    if FixZ2='Z1' then graphicsGDIPlus.DrawImage(znak1,FixFX2*zoom-ZNAK1_OFFSET,FixFy2*zoom-ZNAK1_OFFSET,ZNAK1_SIZE,ZNAK1_SIZE);
+    if FixZ2='Z2' then graphicsGDIPlus.DrawImage(znak2,FixFX2*zoom-36,FixFy2*zoom-63,75,75);
+    if FixZ2='Z3' then graphicsGDIPlus.DrawImage(znak3,FixFX2*zoom-75,FixFy2*zoom-38,75,75);
+    if FixZ2='Z4' then graphicsGDIPlus.DrawImage(znak4,FixFX2*zoom-37,FixFy2*zoom-62,75,75);
+  end;
+
+  if (TaskStage = 3) and Tr then
+  begin
+    if FixTr then
+      graphicsGDIPlus.TranslateTransform(FixTrX, FixTrY)
+    else
+      graphicsGDIPlus.TranslateTransform(MouseX, MouseY);
+    graphicsGDIPlus.RotateTransform(-spin);
+    graphicsGDIPlus.DrawImage(Transportir, -250, -150);
+    graphicsGDIPlus.ResetTransform;
+  end;
+
+  if fixL then
+  begin
+    graphicsGDIPlus.TranslateTransform(FixLX*zoom,FixLY*zoom);
+    graphicsGDIPlus.ScaleTransform(zoom*Lzoom,zoom*Lzoom);
+    graphicsGDIPlus.RotateTransform(-Fixspin);
+    path := TGPGraphicsPath.Create;
+    try
+      solidBrush := TGPSolidBrush.Create(MakeColor(200,255,255,255));
+      try
+        path.Reset;
+        path.StartFigure();
+        path.AddLine(-70,-40,150,-40);
+        path.AddLine(150,-40,-70,100);
+        path.AddLine(-70,100,-70,-40);
+        path.AddLine(-40,-10,60,-10);
+        path.AddLine(60,-10,-40,50);
+        path.AddLine(-40,50,-40,-10);
+        path.CloseFigure();
+        graphicsGDIPlus.FillPath(solidBrush, path);
+
+        graphicsGDIPlus.DrawLine(LinePen, -70,-40,150,-40);
+        graphicsGDIPlus.DrawLine(LinePen, 150,-40,-70,100);
+        graphicsGDIPlus.DrawLine(LinePen, -70,100,-70,-40);
+        graphicsGDIPlus.DrawLine(LinePen, -40,-10,60,-10);
+        graphicsGDIPlus.DrawLine(LinePen, 60,-10,-40,50);
+        graphicsGDIPlus.DrawLine(LinePen, -40,50,-40,-10);
+      finally
+        solidBrush.Free;
+      end;
+
+      for i:=1 to 100 do
+      begin
+        if i mod 5 = 0 then
+          graphicsGDIPlus.DrawLine(LinePen, i*2-70, -40, i*2-70, -33)
+        else
+          graphicsGDIPlus.DrawLine(LinePen, i*2-70, -40, i*2-70, -35);
+      end;
+
+      fontFamily := TGPFontFamily.Create('Times New Roman');
+      font := TGPFont.Create(fontFamily, 9, FontStyleRegular, UnitPixel);
+      solidBrush := TGPSolidBrush.Create(MakeColor(255,0,0,0));
+      try
+        for i:=1 to 9 do
+        begin
+          graphicsGDIPlus.SetTextRenderingHint(TextRenderingHintAntiAlias);
+          graphicsGDIPlus.DrawString(IntToStr(i), -1, font, MakePoint(i*20-74, -33.0), solidBrush);
+        end;
+      finally
+        fontFamily.Free;
+        font.Free;
+        solidBrush.Free;
+      end;
+    finally
+      path.Free;
+      graphicsGDIPlus.ResetTransform;
+    end;
+  end;
+
+  if (whatDraw='L') then
+  begin
+    graphicsGDIPlus.TranslateTransform(Mousex,MouseY);
+    graphicsGDIPlus.ScaleTransform(zoom*Lzoom,zoom*Lzoom);
+    graphicsGDIPlus.RotateTransform(-spin);
+    path := TGPGraphicsPath.Create;
+    try
+      solidBrush := TGPSolidBrush.Create(MakeColor(200,255,255,255));
+      try
+        path.Reset;
+        path.StartFigure();
+        path.AddLine(-70,-40,150,-40);
+        path.AddLine(150,-40,-70,100);
+        path.AddLine(-70,100,-70,-40);
+        path.AddLine(-40,-10,60,-10);
+        path.AddLine(60,-10,-40,50);
+        path.AddLine(-40,50,-40,-10);
+        path.CloseFigure();
+        graphicsGDIPlus.FillPath(solidBrush, path);
+
+        graphicsGDIPlus.DrawLine(LinePen, -70,-40,150,-40);
+        graphicsGDIPlus.DrawLine(LinePen, 150,-40,-70,100);
+        graphicsGDIPlus.DrawLine(LinePen, -70,100,-70,-40);
+        graphicsGDIPlus.DrawLine(LinePen, -40,-10,60,-10);
+        graphicsGDIPlus.DrawLine(LinePen, 60,-10,-40,50);
+        graphicsGDIPlus.DrawLine(LinePen, -40,50,-40,-10);
+      finally
+        solidBrush.Free;
+      end;
+
+      for i:=1 to 100 do
+      begin
+        if i mod 5 = 0 then
+          graphicsGDIPlus.DrawLine(LinePen, i*2-70, -40, i*2-70, -33)
+        else
+          graphicsGDIPlus.DrawLine(LinePen, i*2-70, -40, i*2-70, -35);
+      end;
+
+      fontFamily := TGPFontFamily.Create('Times New Roman');
+      font := TGPFont.Create(fontFamily, 9, FontStyleRegular, UnitPixel);
+      solidBrush := TGPSolidBrush.Create(MakeColor(255,0,0,0));
+      try
+        for i:=1 to 9 do
+        begin
+          graphicsGDIPlus.SetTextRenderingHint(TextRenderingHintAntiAlias);
+          graphicsGDIPlus.DrawString(IntToStr(i), -1, font, MakePoint(i*20-74, -33.0), solidBrush);
+        end;
+      finally
+        fontFamily.Free;
+        font.Free;
+        solidBrush.Free;
+      end;
+    finally
+      path.Free;
+      graphicsGDIPlus.ResetTransform;
+    end;
+  end;
+
+  Image1.Repaint;
+
+  T2:=now;
+  DecodeTime(T2-T1,h,m,s,ms);
+  Caption:=(IntToStr(s)+':'+IntToStr(ms)+'  '+IntToStr(Mousex)+'x'+IntToStr(Mousey)+
+    '  '+FloatToStrF((8380+((Mousex/zoom-x1)*xx1/det+(Mousey/zoom-y1)*yy1/det)), ffFixed, 8, 1)+'x'+
+    FloatToStrF((6320-((Mousex/zoom-x1)*xx2/det+(Mousey/zoom-y1)*yy2/det)), ffFixed, 8, 1)+
+    '   '+ FloatToStrF(ScrollBox1.VertScrollBar.Range, ffFixed, 8, 1)+' '+
+    FloatToStrF(ScrollBox1.VertScrollBar.Position+ScrollBox1.ClientHeight, ffFixed, 8, 1));
+end;
+
+procedure TFormcoords100k.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (key='+') then
+  begin
+    zoom:=zoom*1.1;
+    Image1.Width:=Round(2043*zoom);
+    Image1.Height:=Round(2566*zoom);
+    Image1.Picture.Bitmap.Height := Round(2566*zoom);
+    Image1.Picture.Bitmap.Width := Round(2043*zoom);
+
+    WidthImage:=Round(2043*zoom);
+    HightImage:=Round(2566*zoom);
+    R.X :=  0 ;  R.Y := 0;
+    R.Width := WidthImage;  R.Height := HightImage;
+    Bitmap.Free;
+    Bitmap:=TGPBitmap.Create(WidthImage,HightImage);
+    graphicsGDIPlus:= TGPGraphics.Create(Bitmap);
+    GraphicsGDIPlus.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    graphicsGDIPlus.drawImage(Image,R);
+    graphicsGDIPlus.Free;
+
+    graphicsGDIPlus:= TGPGraphics.Create(Image1.Canvas.Handle);
+    cBitmap.Free;
+    cBitmap:= TGPCachedBitmap.Create(BitMap, graphicsGDIPlus);
+    graphicsGDIPlus.DrawCachedBitmap(cBitMap,0,0);
+    graphicsGDIPlus.Free;
+    LPaint;
+  end;
+
+  if (key='-') then
+  begin
+    zoom:=zoom/1.1;
+    Image1.Width:=Round(2043*zoom);
+    Image1.Height:=Round(2566*zoom);
+    Image1.Picture.Bitmap.Height := Round(2566*zoom);
+    Image1.Picture.Bitmap.Width := Round(2043*zoom);
+
+    WidthImage:=Round(2043*zoom);
+    HightImage:=Round(2566*zoom);
+    R.X :=  0 ;  R.Y := 0;
+    R.Width := WidthImage;  R.Height := HightImage;
+    Bitmap.Free;
+    Bitmap:=TGPBitmap.Create(WidthImage,HightImage);
+    graphicsGDIPlus:= TGPGraphics.Create(Bitmap);
+    graphicsGDIPlus.drawImage(Image,R);
+    graphicsGDIPlus.Free;
+
+    graphicsGDIPlus:= TGPGraphics.Create(Image1.Canvas.Handle);
+    cBitmap.Free;
+    cBitmap:= TGPCachedBitmap.Create(BitMap, graphicsGDIPlus);
+    graphicsGDIPlus.DrawCachedBitmap(cBitMap,0,0);
+    graphicsGDIPlus.Free;
+    LPaint;
+  end;
+end;
+
+procedure TFormcoords100k.FormMouseWheelDown(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if (TaskStage = 3) and Tr and (not FixTr) then
+  begin
+    if CtrlDown then spin := spin - 0.4 else spin := spin - 5;
+    LPaint;
+    Handled := True;
+  end
+  else if (whatDraw = 'L') or FixL then
+  begin
+    if CtrlDown then spin := spin - 0.4 else spin := spin - 5;
+    LPaint;
+    Handled := True;
+  end;
+end;
+
+procedure TFormcoords100k.FormMouseWheelUp(Sender: TObject; Shift: TShiftState;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  if (TaskStage = 3) and Tr and (not FixTr) then
+  begin
+    if CtrlDown then spin := spin + 0.4 else spin := spin + 5;
+    LPaint;
+    Handled := True;
+  end
+  else if (whatDraw = 'L') or FixL then
+  begin
+    if CtrlDown then spin := spin + 0.4 else spin := spin + 5;
+    LPaint;
+    Handled := True;
+  end;
+end;
+
+procedure TFormcoords100k.BitBtn1Click(Sender: TObject);
+begin
+  Self.ActiveControl := nil;
+  if (whatDraw='L') or FixL then
+  begin
+    whatDraw:='0';
+    Image1.Repaint;
+  end
+  else
+    whatDraw:='L';
+  FixL:=false;
+  spin:=0;
+  LPaint;
+end;
+
+procedure TFormcoords100k.BitBtn1KeyPress(Sender: TObject; var Key: Char);
+begin
+  FormKeyPress(self, Key);
+end;
+
+procedure TFormcoords100k.BitBtn1MouseEnter(Sender: TObject);
+begin
+  BitBtn1.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Btn2Theg2.bmp');
+end;
+
+procedure TFormcoords100k.BitBtn1MouseLeave(Sender: TObject);
+begin
+  BitBtn1.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Btn2Theg1.bmp');
+end;
+
+procedure TFormcoords100k.BitBtnProtractorClick(Sender: TObject);
+begin
+  Self.ActiveControl := nil;
+  Tr := not Tr;
+  LPaint;
+end;
+
+procedure TFormcoords100k.BitBtnProtractorMouseEnter(Sender: TObject);
+begin
+  LoadPngToGlyph(BitBtnProtractor, '..\data\cwtopograf\assets\green\protractor2.png');
+end;
+
+procedure TFormcoords100k.BitBtnProtractorMouseLeave(Sender: TObject);
+begin
+  LoadPngToGlyph(BitBtnProtractor, '..\data\cwtopograf\assets\green\protractor1.png');
+end;
+
+procedure TFormcoords100k.BhideClick(Sender: TObject);
+begin
+  Self.ActiveControl := nil;
+  PanelLeft.Caption:='Новая задача';
+  While Bznak1.Width>0 do
+    Bznak1.Width:=Bznak1.Width-1;
+  While Bhide.Width>0 do
+    Bhide.Width:=Bhide.Width-1;
+  While PanelLeft.Width>82 do
+  begin
+    PanelLeft.Width:=PanelLeft.Width-1;
+  end;
+end;
+
+procedure TFormcoords100k.BhideMouseEnter(Sender: TObject);
+begin
+  Bhide.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Bhide2.bmp');
+end;
+
+procedure TFormcoords100k.BhideMouseLeave(Sender: TObject);
+begin
+  Bhide.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Bhide1.bmp');
+end;
+
+procedure TFormcoords100k.ButtonNextClick(Sender: TObject);
+var
+  dx, dy, px, py: integer;
+  kx, ky, shirota, dolgota, delta_shirota, delta_dolgota: real;
+  RealGX, RealGY: Double;
+  UserX, UserY, DiffX, DiffY: Double;
+  ZoneText: string;
+begin
+  FixL := False;
+  whatDraw := '0';
+  FixTr := False;
+
+  if TaskStage = 1 then
+  begin
+    dx := 120;
+    dy := 134;
+    px := fixfx - dx;
+    py := fixfy - dy;
+    kx := 1800 / 1795;
+    ky := 3600 / 2189;
+
+    shirota := StrToFloatDef(edit4.text, 0)*3600 + StrToFloatDef(edit5.text, 0)*60 + StrToFloatDef(edit6.text, 0);
+    dolgota := StrToFloatDef(edit7.text, 0)*3600 + StrToFloatDef(edit8.text, 0)*60 + StrToFloatDef(edit9.text, 0);
+
+    delta_shirota := shirota - (56*3600+40*60+(2189-py)*ky) + 2400*(2189-py)/2189;
+    delta_dolgota := dolgota - (43*3600+px*kx);
+    TempGeoResult := 'Географические координаты: Ошибка по широте ' + FloatToStr(RoundTo(delta_shirota, -1)) +
+                    '" ; по долготе ' + FloatToStr(RoundTo(delta_dolgota, -1)) + '".';
+
+    repeat
+      FixFX2 := 250 + Random(1300);
+      FixFY2 := 250 + Random(1900);
+    until sqrt(sqr(FixFX2 - FixFX) + sqr(FixFY2 - FixFY)) > 200;
+
+    FixZ2 := 'Z2';
+    TaskStage := 2;
+    UpdateControlsVisibility;
+    ButtonNext.Caption := 'Третье задание';
+
+    LPaint;
+    FocusOnFlag;
+  end
+  else if TaskStage = 2 then
+  begin
+    RealGX := 8380 + ((FixFX2 - x1) * xx1 / det + (FixFY2 - y1) * yy1 / det);
+    RealGY := 6320 - ((FixFX2 - x1) * xx2 / det + (FixFY2 - y1) * yy2 / det);
+
+    UserX := StrToFloatDef(Edit2.Text, 0) / 1000.0;
+    UserY := StrToFloatDef(Edit1.Text, 0) / 1000.0;
+
+    DiffX := Abs(UserX - RealGX) * 1000;
+    DiffY := Abs(UserY - RealGY) * 1000;
+
+    if Trim(Edit3.Text) = '8' then
+      ZoneText := 'верно'
+    else
+      ZoneText := 'неверно';
+
+    TempRectResult := Format('Прямоугольные координаты: Ошибка по X: %.1f м; по Y: %.1f м. Зона: %s.',
+                             [DiffX, DiffY, ZoneText]);
+
+    TaskStage := 3;
+    Tr := False;
+    whatDraw := '0';
+    UpdateControlsVisibility;
+    ButtonNext.Visible := False;
+    LPaint;
+    FocusOnFlag;
+  end;
+end;
+
+procedure TFormcoords100k.ButtonFinishClick(Sender: TObject);
+var
+  i, j, q: integer;
+  ResultMsg: string;
+  R: array[1..4] of array[1..6] of string;
+  U: array[1..4] of double;
+  dat: array[1..4] of double;
+begin
+  if FixFX2 >= FixFX then
+    dat[2] := 0.16 + 180 / 3.1415 * ArcCos((FixFY - FixFY2) / sqrt((FixFX2 - FixFX) * (FixFX2 - FixFX) + (FixFY2 - FixFY) * (FixFY2 - FixFY)))
+  else
+    dat[2] := 0.16 + 180 + 180 / 3.1415 * ArcCos((FixFY2 - FixFY) / sqrt((FixFX - FixFX2) * (FixFX - FixFX2) + (FixFY2 - FixFY) * (FixFY2 - FixFY)));
+
+  R[1][1] := Edit10.Text;  R[1][2] := Edit11.Text;
+  R[2][1] := Edit12.Text;  R[2][2] := Edit13.Text;
+  R[3][1] := Edit14.Text;  R[3][2] := Edit15.Text;
+  R[4][1] := Edit16.Text;  R[4][2] := Edit17.Text;
+
+  if dat[2] + 1.467 < 360 then dat[1] := (dat[2] + 1.467) else dat[1] := (dat[2] + 1.467) - 360;
+
+  if dat[2] - 9.4 >= 0 then dat[3] := (dat[2] - 9.4) else dat[3] := 360 + (dat[2] - 9.4); // Исправлен баг
+
+  if Length(ComboBox2.Text) <> 0 then dat[4] := (StrToIntDef(ComboBox2.Text, 2015) - 1983) / 60
+  else begin ComboBox2.Text := '2015'; dat[4] := (2015 - 1983) / 60; end;
+
+  for i := 1 to 4 do
+  begin
+    if Length(TrimLeft(R[i][1])) = 0 then R[i][1] := '0';
+    if Length(TrimLeft(R[i][2])) = 0 then R[i][2] := '0';
+    U[i] := StrToFloatDef(R[i][1], 0) + StrToFloatDef(R[i][2], 0) / 60;
+  end;
+
+  for i := 1 to 4 do
+  begin
+    if Abs(U[i] - dat[i]) < (360 - Abs(U[i] - dat[i])) then
+    begin
+      R[i][3] := IntToStr(Trunc(Abs(U[i] - dat[i])));
+      R[i][4] := IntToStr(Trunc((Abs(U[i] - dat[i]) - StrToFloatDef(R[i][3], 0)) * 60));
+    end
+    else
+    begin
+      R[i][3] := IntToStr(Trunc(360 - Abs(U[i] - dat[i])));
+      R[i][4] := IntToStr(Trunc((360 - Abs(U[i] - dat[i]) - StrToFloatDef(R[i][3], 0)) * 60));
+    end;
+  end;
+
+  if ComboBox1.ItemIndex = 0 then q := 1 else if ComboBox1.ItemIndex = 1 then q := -1 else q := 0;
+
+  if Abs(q * U[4] - dat[4]) < (360 - Abs(q * U[4] - dat[4])) then
+  begin
+    R[4][3] := IntToStr(Trunc(Abs(q * U[4] - dat[4])));
+    R[4][4] := IntToStr(Round((Abs(q * U[4] - dat[4]) - StrToFloatDef(R[4][3], 0)) * 60));
+  end
+  else
+  begin
+    R[4][3] := IntToStr(Trunc(360 - Abs(q * U[4] - dat[4])));
+    R[4][4] := IntToStr(Round((360 - Abs(q * U[4] - dat[4]) - StrToFloatDef(R[4][3], 0)) * 60));
+  end;
+
+  for i := 1 to 4 do
+  begin
+    for j := 1 to (6 - Length(TrimLeft(R[i][3]))) do R[i][3] := '  ' + R[i][3];
+    for j := 1 to (2 - Length(TrimLeft(R[i][4]))) do R[i][4] := '  ' + R[i][4];
+  end;
+
+  for i := 1 to 3 do
+  begin
+    if (StrToFloatDef(Trim(R[i][3]), 0) + StrToFloatDef(Trim(R[i][4]), 0) / 60) <= 1.2 then R[i][5] := '✓' else R[i][5] := '✕';
+    for j := 1 to 12 do R[i][5] := ' ' + R[i][5];
+  end;
+
+  if (StrToFloatDef(Trim(R[4][3]), 0) + StrToFloatDef(Trim(R[4][4]), 0) / 60) <= 0.02 then R[4][5] := '✓' else R[4][5] := '✕';
+  for j := 1 to 12 do R[4][5] := ' ' + R[4][5];
+
+  ResultMsg :=
+    'Дирекционный угол:       ' + Trim(R[1][1]) + '° ' + Trim(R[1][2]) + #39 + ' | Ошибка: ' + Trim(R[1][3]) + '° ' + Trim(R[1][4]) + #39 + ' | ' + Trim(R[1][5]) + sLineBreak +
+    'Истинный азимут:         ' + Trim(R[2][1]) + '° ' + Trim(R[2][2]) + #39 + ' | Ошибка: ' + Trim(R[2][3]) + '° ' + Trim(R[2][4]) + #39 + ' | ' + Trim(R[2][5]) + sLineBreak +
+    'Магнитный азимут:        ' + Trim(R[3][1]) + '° ' + Trim(R[3][2]) + #39 + ' | Ошибка: ' + Trim(R[3][3]) + '° ' + Trim(R[3][4]) + #39 + ' | ' + Trim(R[3][5]) + sLineBreak +
+    'Изменение м-го азимута:  ' + Trim(R[4][1]) + '° ' + Trim(R[4][2]) + #39 + ' | Ошибка: ' + Trim(R[4][3]) + '° ' + Trim(R[4][4]) + #39 + ' | ' + Trim(R[4][5]);
+
+  PracticeCoordsDone := True;
+  PracticeCornersDone := True;
+  PracticeCoordsResultStr := TempGeoResult;
+  PracticeCornersResultStr := ResultMsg;
+  PracticeRectDone := True;
+  PracticeRectResultStr := TempRectResult;
+  Self.Close;
+end;
+
+procedure TFormcoords100k.Bznak1Click(Sender: TObject);
+begin
+  Self.ActiveControl := nil;
+  Whatdraw:='Z1';
+end;
+
+procedure TFormcoords100k.Bznak1MouseEnter(Sender: TObject);
+begin
+  Bznak1.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Flag12.bmp');
+end;
+
+procedure TFormcoords100k.Bznak1MouseLeave(Sender: TObject);
+begin
+  Bznak1.Glyph.LoadFromFile('..\data\cwtopograf\assets\green/Flag11.bmp');
+end;
+
+function TFormcoords100k.CtrlDown : Boolean;
+var
+  State : TKeyboardState;
+begin
+  GetKeyboardState(State);
+  Result := ((State[vk_Control] And 128) <> 0);
+end;
+
+procedure TFormcoords100k.Edit1KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not CharInSet(Key, ['0'..'9'])) and (Key <> #44) and (Key <> #46) then
+  begin
+    FormKeyPress(self, key);
+    Key:=#0
+  end
+  else if Key=#46 then Key:=#44;
+end;
+
+procedure TFormcoords100k.Edit2KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not CharInSet(Key, ['0'..'9'])) and (Key <> #44) and (Key <> #46) then
+  begin
+    FormKeyPress(self, key);
+    Key:=#0
+  end
+  else if Key=#46 then Key:=#44;
+end;
+
+procedure TFormcoords100k.Edit3KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not CharInSet(Key, ['0'..'9'])) and (Key <> #44) and (Key <> #46) then
+  begin
+    FormKeyPress(self, key);
+    Key:=#0
+  end
+  else if Key=#46 then Key:=#44;
+end;
+
+procedure TFormcoords100k.Edit10KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit11KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit12KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit13KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit14KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit15KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit16KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+procedure TFormcoords100k.Edit17KeyPress(Sender: TObject; var Key: Char);
+begin Edit1KeyPress(Sender, Key); end;
+
+procedure TFormcoords100k.ComboBox1KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not CharInSet(Key, ['0'..'9'])) and (Key <> #44) and (Key <> #46) then
+  begin
+    FormKeyPress(self, key);
+    Key:=#0
+  end
+  else if Key=#46 then Key:=#44;
+end;
+
+procedure TFormcoords100k.ComboBox2KeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key > #31) and (not CharInSet(Key, ['0'..'9'])) then
+  begin
+    FormKeyPress(self, key);
+    Key:=#0
+  end;
+end;
+
+end.

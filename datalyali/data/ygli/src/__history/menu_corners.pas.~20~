@@ -1,0 +1,498 @@
+﻿unit menu_corners;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
+  GDIPAPI, GDIPOBJ;
+
+type
+  TMenuSpeedButton = class(Vcl.Buttons.TSpeedButton)
+  protected
+    procedure Paint; override;
+  end;
+
+  TFormmenucorners = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    ImageLogo: TPaintBox;
+    LabelCredits: TLabel;
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure ImageLogoPaint(Sender: TObject);
+    procedure OnMapMenuBack(Sender: TObject);
+    procedure OnMapsClick(Sender: TObject);
+    procedure OnLearningClick(Sender: TObject);
+    procedure OnAboutClick(Sender: TObject);
+    procedure OnExitClick(Sender: TObject);
+    procedure OnChkalovskClick(Sender: TObject);
+    procedure OnSnov1991Click(Sender: TObject);
+    procedure OnSnov1966Click(Sender: TObject);
+  private
+    FMainButtons: array[0..3] of TMenuSpeedButton;
+    FMapButtons: array[0..3] of TMenuSpeedButton;
+    FInMapMenu: Boolean;
+    FLogoImage: TGPImage;
+    FFonImage: TGPImage;   // фоновое изображение earth.png
+    procedure CreateMainMenu;
+    procedure CreateMapMenu;
+    procedure ShowMainMenu;
+    procedure ShowMapMenu;
+  public
+  end;
+
+var
+  Formmenucorners: TFormmenucorners;
+
+implementation
+
+{$R *.dfm}
+
+uses instructions, about_program, corners_25k, corners_50k, corners_100k;
+
+const
+  ButtonWidth = 300;
+  ButtonHeight = 60;
+  VerticalGap = 20;
+  MapVerticalGap = 60;
+
+procedure TMenuSpeedButton.Paint;
+var
+  graphics: TGPGraphics;
+  path, borderPath: TGPGraphicsPath;
+  brush: TGPSolidBrush;
+  pen: TGPPen;
+  rect: TGPRectF;
+  radius: Single;
+begin
+  inherited Paint;
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    radius := 20;
+
+    path := TGPGraphicsPath.Create;
+    try
+      rect.X := 0;
+      rect.Y := 0;
+      rect.Width := Width;
+      rect.Height := Height;
+      path.AddRectangle(rect);
+
+      path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      path.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      path.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      path.CloseFigure();
+
+      brush := TGPSolidBrush.Create(MakeColor(255, 0, 0, 0));
+      try
+        graphics.FillPath(brush, path);
+      finally
+        brush.Free;
+      end;
+    finally
+      path.Free;
+    end;
+
+    pen := TGPPen.Create(MakeColor(255, 255, 215, 0), 2);
+    borderPath := TGPGraphicsPath.Create;
+    try
+      rect.X := 1;
+      rect.Y := 1;
+      rect.Width := Width - 2;
+      rect.Height := Height - 2;
+
+      borderPath.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+      borderPath.AddArc(rect.X + rect.Width - radius * 2, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+      borderPath.AddArc(rect.X, rect.Y + rect.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+      borderPath.CloseFigure();
+
+      graphics.DrawPath(pen, borderPath);
+    finally
+      borderPath.Free;
+      pen.Free;
+    end;
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormmenucorners.FormCreate(Sender: TObject);
+begin
+  Self.Caption := 'Углы';
+  BorderStyle := bsNone;
+  Color := clBlack;
+  WindowState := wsMaximized;
+  DoubleBuffered := True;
+
+  if FileExists('..\data\ygli\assets\decorations/logo_vuc.jpg') then
+    FLogoImage := TGPImage.Create('..\data\ygli\assets\decorations/logo_vuc.jpg')
+  else
+    FLogoImage := nil;
+
+  // Загружаем фоновое изображение earth.png (как в основном меню)
+  if FileExists('..\data\ygli\assets\earth_maps\earth.png') then
+    FFonImage := TGPImage.Create('..\data\ygli\assets\earth_maps\earth.png')
+  else
+    FFonImage := nil;
+
+  Label1.Caption := 'Масштаб 1:100000';
+  Label1.Font.Size := 12;
+  Label1.Font.Color := clWhite;
+  Label1.Visible := False;
+
+  Label2.Caption := 'Масштаб 1:25000';
+  Label2.Font.Size := 12;
+  Label2.Font.Color := clWhite;
+  Label2.Visible := False;
+
+  Label3.Caption := 'Масштаб 1:50000';
+  Label3.Font.Size := 12;
+  Label3.Font.Color := clWhite;
+  Label3.Visible := False;
+
+  LabelCredits.Font.Color := $00D7FF;
+  LabelCredits.Font.Size := 0;
+  LabelCredits.Font.Height := -17;
+  LabelCredits.Font.Name := 'Segoe UI';
+  LabelCredits.Font.Style := [fsBold];
+  LabelCredits.Alignment := taRightJustify;
+  LabelCredits.Caption := 'Выполнили:' + sLineBreak +
+                          'Кравчук Светозар Кириллович' + sLineBreak +
+                          'Семиков Даниил Александрович' + sLineBreak +
+                          '' + sLineBreak +
+                          'Научный руководитель:' + sLineBreak +
+                          'Рак Евгений Николаевич';
+  LabelCredits.Visible := False;
+
+  CreateMainMenu;
+  CreateMapMenu;
+
+  ShowMainMenu;
+end;
+
+procedure TFormmenucorners.FormDestroy(Sender: TObject);
+begin
+  FLogoImage.Free;
+  FFonImage.Free;
+end;
+
+procedure TFormmenucorners.FormPaint(Sender: TObject);
+const
+  VisibilityRatio = 0.68;
+var
+  graphics: TGPGraphics;
+  imgW, imgH: Integer;
+  targetH, targetW: Integer;
+  destRect1, destRect2: TGPRectF;
+begin
+  // Рисуем earth.png только в режиме выбора карт, как в menu.pas
+  if (FFonImage = nil) or (not FInMapMenu) then
+    Exit;
+
+  graphics := TGPGraphics.Create(Canvas.Handle);
+  try
+    graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    imgW := FFonImage.GetWidth;
+    imgH := FFonImage.GetHeight;
+
+    targetH := Round(ClientHeight * 0.96);
+    targetW := Round(targetH * imgW / imgH);
+
+    destRect1.Width := targetW;
+    destRect1.Height := targetH;
+    destRect1.X := -Round(targetW * (1 - VisibilityRatio));
+    destRect1.Y := ClientHeight - Round(targetH * VisibilityRatio);
+
+    destRect2.Width := targetW;
+    destRect2.Height := targetH;
+    destRect2.X := ClientWidth - Round(targetW * VisibilityRatio);
+    destRect2.Y := -Round(targetH * (1 - VisibilityRatio));
+
+    graphics.DrawImage(FFonImage, destRect1, 0, 0, imgW, imgH, UnitPixel);
+    graphics.DrawImage(FFonImage, destRect2, 0, 0, imgW, imgH, UnitPixel);
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormmenucorners.ImageLogoPaint(Sender: TObject);
+var
+  graphics: TGPGraphics;
+  destRect: TGPRectF;
+  imgWidth, imgHeight: Integer;
+  w, h: Integer;
+begin
+  if FLogoImage = nil then Exit;
+
+  graphics := TGPGraphics.Create(ImageLogo.Canvas.Handle);
+  try
+    graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+    graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+    graphics.SetPixelOffsetMode(PixelOffsetModeHighQuality);
+
+    imgWidth := FLogoImage.GetWidth;
+    imgHeight := FLogoImage.GetHeight;
+
+    if (ImageLogo.Width / ImageLogo.Height) > (imgWidth / imgHeight) then
+    begin
+      h := ImageLogo.Height;
+      w := Round(h * imgWidth / imgHeight);
+    end
+    else
+    begin
+      w := ImageLogo.Width;
+      h := Round(w * imgHeight / imgWidth);
+    end;
+
+    destRect.X := (ImageLogo.Width - w) / 2;
+    destRect.Y := (ImageLogo.Height - h) / 2;
+    destRect.Width := w;
+    destRect.Height := h;
+
+    graphics.DrawImage(FLogoImage, destRect, 0, 0, imgWidth, imgHeight, UnitPixel);
+  finally
+    graphics.Free;
+  end;
+end;
+
+procedure TFormmenucorners.CreateMainMenu;
+const
+  Captions: array[0..3] of string = ('Карты', 'Обучение', 'О программе', 'Выход');
+var
+  events: array[0..3] of TNotifyEvent;
+  i: Integer;
+begin
+  events[0] := OnMapsClick;
+  events[1] := OnLearningClick;
+  events[2] := OnAboutClick;
+  events[3] := OnExitClick;
+
+  for i := 0 to 3 do
+  begin
+    FMainButtons[i] := TMenuSpeedButton.Create(Self);
+    with FMainButtons[i] do
+    begin
+      Parent := Self;
+      Caption := Captions[i];
+      Flat := True;
+      Font.Color := $00D7FF;
+      Font.Size := 14;
+      Font.Name := 'Segoe UI';
+      Font.Style := [fsBold];
+      Cursor := crHandPoint;
+      Width := ButtonWidth;
+      Height := ButtonHeight;
+      OnClick := events[i];
+      Visible := True;
+    end;
+  end;
+end;
+
+procedure TFormmenucorners.CreateMapMenu;
+const
+  Captions: array[0..3] of string = ('Чкаловск (1986 г.)', 'СНОВ (1991 г.)', 'СНОВ (1966 г.)', 'Назад');
+var
+  events: array[0..3] of TNotifyEvent;
+  i: Integer;
+begin
+  events[0] := OnChkalovskClick;
+  events[1] := OnSnov1991Click;
+  events[2] := OnSnov1966Click;
+  events[3] := OnMapMenuBack;
+
+  for i := 0 to 3 do
+  begin
+    FMapButtons[i] := TMenuSpeedButton.Create(Self);
+    with FMapButtons[i] do
+    begin
+      Parent := Self;
+      Caption := Captions[i];
+      Flat := True;
+      Font.Color := $00D7FF;
+      Font.Size := 14;
+      Font.Name := 'Segoe UI';
+      Font.Style := [fsBold];
+      Cursor := crHandPoint;
+      Width := ButtonWidth;
+      Height := ButtonHeight;
+      OnClick := events[i];
+      Visible := False;
+    end;
+  end;
+end;
+
+procedure TFormmenucorners.ShowMainMenu;
+var
+  i: Integer;
+begin
+  for i := 0 to 3 do
+    FMainButtons[i].Visible := True;
+  for i := 0 to 3 do
+    FMapButtons[i].Visible := False;
+  Label1.Visible := False;
+  Label2.Visible := False;
+  Label3.Visible := False;
+  LabelCredits.Visible := True;
+  FInMapMenu := False;
+  Self.Invalidate;
+  FormResize(Self);
+  ImageLogo.Visible := True;
+end;
+
+procedure TFormmenucorners.ShowMapMenu;
+var
+  i: Integer;
+begin
+  for i := 0 to 3 do
+    FMainButtons[i].Visible := False;
+  for i := 0 to 3 do
+    FMapButtons[i].Visible := True;
+  Label1.Visible := True;
+  Label2.Visible := True;
+  Label3.Visible := True;
+  LabelCredits.Visible := False;
+  FInMapMenu := True;
+  Self.Invalidate;
+  FormResize(Self);
+  ImageLogo.Visible := False;
+end;
+
+procedure TFormmenucorners.OnMapsClick(Sender: TObject);
+begin
+  ShowMapMenu;
+end;
+
+procedure TFormmenucorners.OnMapMenuBack(Sender: TObject);
+begin
+  ShowMainMenu;
+end;
+
+procedure TFormmenucorners.OnLearningClick(Sender: TObject);
+begin
+  if Forminstructions = nil then
+    Application.CreateForm(TForminstructions, Forminstructions);
+  Forminstructions.Show;
+end;
+
+procedure TFormmenucorners.OnAboutClick(Sender: TObject);
+begin
+  if Formprogram = nil then
+    Application.CreateForm(TFormprogram, Formprogram);
+  Formprogram.Show;
+end;
+
+procedure TFormmenucorners.OnExitClick(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+procedure TFormmenucorners.OnChkalovskClick(Sender: TObject);
+var
+  F: TFormcorners100k;
+begin
+  F := TFormcorners100k.Create(Application);
+  try
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TFormmenucorners.OnSnov1991Click(Sender: TObject);
+var
+  F: TFormcorners50k;
+begin
+  F := TFormcorners50k.Create(Application);
+  try
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TFormmenucorners.OnSnov1966Click(Sender: TObject);
+var
+  F: TFormcorners25k;
+begin
+  F := TFormcorners25k.Create(Application);
+  try
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TFormmenucorners.FormResize(Sender: TObject);
+var
+  i: Integer;
+  StartY, TotalHeight: Integer;
+begin
+  ImageLogo.Left := (Self.ClientWidth - ImageLogo.Width) div 2;
+  ImageLogo.Top := 20;
+
+  if FInMapMenu then
+  begin
+    TotalHeight := 4 * ButtonHeight + 3 * MapVerticalGap;
+    StartY := (Self.ClientHeight - TotalHeight) div 2;
+
+    for i := 0 to 3 do
+    begin
+      FMapButtons[i].Left := (Self.ClientWidth - ButtonWidth) div 2;
+      FMapButtons[i].Top := StartY + i * (ButtonHeight + MapVerticalGap);
+    end;
+
+    if Label1.Visible then
+    begin
+      Label1.Left := FMapButtons[0].Left + (FMapButtons[0].Width - Label1.Width) div 2;
+      Label1.Top := FMapButtons[0].Top + FMapButtons[0].Height + 10;
+    end;
+    if Label3.Visible then
+    begin
+      Label3.Left := FMapButtons[1].Left + (FMapButtons[1].Width - Label3.Width) div 2;
+      Label3.Top := FMapButtons[1].Top + FMapButtons[1].Height + 10;
+    end;
+    if Label2.Visible then
+    begin
+      Label2.Left := FMapButtons[2].Left + (FMapButtons[2].Width - Label2.Width) div 2;
+      Label2.Top := FMapButtons[2].Top + FMapButtons[2].Height + 10;
+    end;
+  end
+  else
+  begin
+    TotalHeight := 4 * ButtonHeight + 3 * VerticalGap;
+    StartY := (Self.ClientHeight - TotalHeight) div 2;
+
+    for i := 0 to 3 do
+    begin
+      FMainButtons[i].Left := (Self.ClientWidth - ButtonWidth) div 2;
+      FMainButtons[i].Top := StartY + i * (ButtonHeight + VerticalGap);
+    end;
+  end;
+
+  LabelCredits.Left := Self.ClientWidth - LabelCredits.Width - 40;
+  LabelCredits.Top := Self.ClientHeight - LabelCredits.Height - 40;
+
+  Self.Invalidate;
+end;
+
+procedure TFormmenucorners.FormShow(Sender: TObject);
+begin
+  Self.Left := 0;
+  Self.Top := 0;
+  Self.WindowState := wsMaximized;
+end;
+
+end.
