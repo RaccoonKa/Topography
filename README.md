@@ -19,7 +19,7 @@ A set of training programs designed for university students. The purpose of this
 ## 🛠 Technical information
 
 *   **Development language:** Pascal
-*   **Wednesday:** Delphi
+*   **Development environment:** Delphi
 
 ## 📥 Launch
 
